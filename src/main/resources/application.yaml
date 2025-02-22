@@ -17,7 +17,7 @@ spring:
       io.netty.resolver.dns: DEBUG
 
 jwt:
-  secret-key-source: ${SECRETKEY}  # JWT ???
+  secret-key-source: ENC(TH3JEhaFp/YER6btYCYQ99ZH9nDc/zuXPIVNM/JnshmEAOsccENF1WNlkkII/0xt)
 jasypt:
   encryptor:
     password: ${JASYPT_SECRET_KEY}
