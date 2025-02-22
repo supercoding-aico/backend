@@ -27,13 +27,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Authentication auth = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-        }catch (Exception e){
-
+        }catch (TokenValidateException tokenValidateException){
+            throw new TokenValidateException("토큰이 유효하지 않습니다.");
         }
 
-        if (token == null){
-            throw new TokenValidateException("토큰이 없거나 유효하지 않습니다.");
-        }
+//        if (token == null){
+//            throw new TokenValidateException("토큰이 없거나 유효하지 않습니다.");
+//        }
         filterChain.doFilter(request,response);
 
     }
