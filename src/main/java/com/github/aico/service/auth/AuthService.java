@@ -14,6 +14,7 @@ import com.github.aico.web.dto.auth.request.LoginRequest;
 import com.github.aico.web.dto.auth.request.NicknameDuplicate;
 import com.github.aico.web.dto.auth.request.SignUpRequest;
 import com.github.aico.web.dto.auth.resposne.DuplicateResult;
+import com.github.aico.web.dto.auth.resposne.UserInfo;
 import com.github.aico.web.dto.base.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,5 +106,16 @@ public class AuthService {
             e.printStackTrace();
             throw new NotAcceptException("로그인 정보가 일치하지 않습니다..");
         }
+    }
+
+    public UserInfo getUserInfo(LoginRequest loginRequest) {
+        User user = userRepository.findByEmailUserFetchJoin(loginRequest.getEmail())
+                .orElseThrow(()->new NotFoundException(loginRequest.getEmail()+"에 해당하는 유저를 찾을 수 없습니다."));
+        return UserInfo.from(user);
+
+    }
+
+    public ResponseDto loginValidRequest(User user) {
+
     }
 }
