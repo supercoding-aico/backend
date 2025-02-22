@@ -2,6 +2,8 @@ package com.github.aico.repository.user;
 
 import com.github.aico.repository.base.BaseEntity;
 import com.github.aico.repository.user_role.UserRole;
+import com.github.aico.service.exceptions.BadRequestException;
+import com.github.aico.web.dto.auth.request.SignUpRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,4 +30,18 @@ public class User extends BaseEntity {
     private String phoneNumber;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
     private List<UserRole> userRoles;
+
+    public static User from(SignUpRequest signUpRequest){
+        return User.builder()
+                .nickname(signUpRequest.getNickname())
+                .email(signUpRequest.getEmail())
+                .phoneNumber(signUpRequest.getPhoneNumber())
+                .build();
+    }
+    public void updatePassword(String password){
+        if (password == null || password.equals("")) {
+            throw new BadRequestException("비밀번호를 입력해주세요");
+        }
+        this.password = password;
+    }
 }
