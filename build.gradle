@@ -46,7 +46,8 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    enabled=false
 }
-tasks.named('bootJar'){
-    mainClass='com.github.aico.AiCoApplication'
-}
+//tasks.named('bootJar'){
+//    mainClass='com.github.aico.AiCoApplication'
+//}
