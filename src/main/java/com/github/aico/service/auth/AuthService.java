@@ -116,6 +116,6 @@ public class AuthService {
     }
 
     public ResponseDto loginValidRequest(User user) {
-
+        return new ResponseDto(HttpStatus.OK.value(),"토큰이 유효합니다.", UserInfo.from(user));
     }
 }
