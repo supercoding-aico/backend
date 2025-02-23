@@ -29,4 +29,9 @@ public class TeamController {
     public ResponseDto updateTeam(@PathVariable Long teamId,@RequestBody MakeTeam makeTeam,@JwtUser User user){
         return teamService.updateTeamResult(makeTeam,user,teamId);
     }
+    @DeleteMapping("/{teamId}")
+    public ResponseDto deleteTeam(@PathVariable Long teamId,@JwtUser User user){
+        return teamService.deleteTeamResult(teamId,user);
+    }
+
 }

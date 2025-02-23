@@ -17,4 +17,6 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long> {
     Page<TeamUser> findAllByUser(User user, Pageable pageable);
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
+
+    List<TeamUser> findAllByTeam(Team team);
 }

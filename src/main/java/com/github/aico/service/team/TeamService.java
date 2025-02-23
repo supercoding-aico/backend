@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -59,6 +60,7 @@ public class TeamService {
     /**
      * 팀 수정(Manger역할을 가진 사람만 수정 가능)
      * */
+    @Transactional
     public ResponseDto updateTeamResult(MakeTeam makeTeam, User user, Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()->new NotFoundException(teamId+ "에 해당하는 team이 존재하지 않습니다."));
@@ -73,7 +75,19 @@ public class TeamService {
     /**
      * 팀 삭제
      * */
+    public ResponseDto deleteTeamResult(Long teamId, User user) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(()->new NotFoundException(teamId+ "에 해당하는 team이 존재하지 않습니다."));
+        TeamRole teamRole = checkTeamRole(team,user);
+        if (!teamRole.equals(TeamRole.MANAGER)){
+            throw new BadRequestException("해당 유저의 권한은 " + teamRole +"이므로 수정 불가능합니다.("+TeamRole.MANAGER+"부터 변경 가능)");
+        }
 
+        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
+        teamUserRepository.deleteAll(teamUsers);
+        teamRepository.delete(team);
+        return new ResponseDto(HttpStatus.NO_CONTENT.value(),"삭제 성공");
+    }
 
 
     /**
@@ -86,4 +100,6 @@ public class TeamService {
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님은 " + team.getTeamId()+"에 가입되어 있지 않습니다."));
         return teamUser.getTeamRole();
     }
+
+
 }
