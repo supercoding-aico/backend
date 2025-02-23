@@ -23,4 +23,11 @@ public class TeamUser {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public static TeamUser of(Team team, User user){
+        return TeamUser.builder()
+                .team(team)
+                .user(user)
+                .build();
+    }
 }
