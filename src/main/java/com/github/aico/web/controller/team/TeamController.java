@@ -33,5 +33,9 @@ public class TeamController {
     public ResponseDto deleteTeam(@PathVariable Long teamId,@JwtUser User user){
         return teamService.deleteTeamResult(teamId,user);
     }
+    @GetMapping("/{teamId}/member")
+    public ResponseDto getTeamMember(@JwtUser User user,@PathVariable Long teamId){
+        return teamService.getTeamMemberResult(user,teamId);
+    }
 
 }

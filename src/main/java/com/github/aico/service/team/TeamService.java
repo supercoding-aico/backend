@@ -11,6 +11,7 @@ import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.team.response.TeamsResponse;
+import com.github.aico.web.dto.teamUser.response.TeamMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -73,8 +74,9 @@ public class TeamService {
         return new ResponseDto(HttpStatus.NO_CONTENT.value(),"업데이트 성공");
     }
     /**
-     * 팀 삭제
+     * 팀 삭제(Manger역할을 가진 사람만 삭제 가능)
      * */
+    @Transactional
     public ResponseDto deleteTeamResult(Long teamId, User user) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()->new NotFoundException(teamId+ "에 해당하는 team이 존재하지 않습니다."));
@@ -83,10 +85,24 @@ public class TeamService {
             throw new BadRequestException("해당 유저의 권한은 " + teamRole +"이므로 수정 불가능합니다.("+TeamRole.MANAGER+"부터 변경 가능)");
         }
 
-        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
-        teamUserRepository.deleteAll(teamUsers);
-        teamRepository.delete(team);
+        teamRepository.deleteTeamById(teamId);
         return new ResponseDto(HttpStatus.NO_CONTENT.value(),"삭제 성공");
+    }
+    /**
+     * 팀 멤버 조회
+     * */
+    public ResponseDto getTeamMemberResult(User user, Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
+        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
+        boolean isUserInTeam = teamUsers.stream()
+                .anyMatch((teamUser) -> teamUser.getUser().equals(user));
+        //팀원이 아니면 팀 멤버 조회 불가
+        if (!isUserInTeam){
+            throw new NotFoundException(user.getNickname() + "은 "+team.getTeamName() +"에 팀원이 아닙니다.");
+        }
+        List<TeamMember> teamMembers = teamUsers.stream().map(TeamMember::from).toList();
+        return new ResponseDto(HttpStatus.OK.value(),"조회 성공", teamMembers);
     }
 
 
@@ -100,6 +116,7 @@ public class TeamService {
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님은 " + team.getTeamId()+"에 가입되어 있지 않습니다."));
         return teamUser.getTeamRole();
     }
+
 
 
 }

@@ -17,7 +17,7 @@ public class TeamUser {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_user_id")
     private Long teamUserId;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "team_id")
     private Team team;
     @ManyToOne(fetch = FetchType.LAZY)
