@@ -2,7 +2,7 @@ name: Deploy EC2
 
 on:
   workflow_run:
-    workflows: ["CiPipe"]  # CI 파이프라인이 완료되면 실행s
+    workflows: ["CiPipe"]  # CI 파이프라인이 완료되면 실행
     types:
       - completed
     branches:
