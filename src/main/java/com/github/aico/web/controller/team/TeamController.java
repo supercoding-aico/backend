@@ -25,4 +25,8 @@ public class TeamController {
     public ResponseDto makeTeam(@RequestBody MakeTeam makeTeam,@JwtUser User user){
         return teamService.makeTeamResult(makeTeam,user);
     }
+    @PutMapping("/{teamId}")
+    public ResponseDto updateTeam(@PathVariable Long teamId,@RequestBody MakeTeam makeTeam,@JwtUser User user){
+        return teamService.updateTeamResult(makeTeam,user,teamId);
+    }
 }

@@ -25,4 +25,7 @@ public class Team extends BaseEntity {
                 .teamName(makeTeam.getName())
                 .build();
     }
+    public void updateTeam(MakeTeam makeTeam){
+        this.teamName = makeTeam.getName();
+    }
 }
