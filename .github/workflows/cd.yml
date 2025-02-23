@@ -5,6 +5,8 @@ on:
     workflows: ["CiPipe"]  # CI 파이프라인이 완료되면 실행s
     types:
       - completed
+    branches:
+      - deploy
 
 jobs:
   deploy:
