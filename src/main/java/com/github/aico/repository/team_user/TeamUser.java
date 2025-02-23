@@ -17,17 +17,21 @@ public class TeamUser {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_user_id")
     private Long teamUserId;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "team_id")
     private Team team;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "team_role",nullable = false)
+    private TeamRole teamRole;
 
     public static TeamUser of(Team team, User user){
         return TeamUser.builder()
                 .team(team)
                 .user(user)
+                .teamRole(TeamRole.MANAGER)
                 .build();
     }
 }

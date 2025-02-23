@@ -26,8 +26,11 @@ public class TeamService {
     private final TeamRepository teamRepository;
     public ResponseDto getMyTeamListResult(User user,Integer page) {
         Pageable pageable = PageRequest.of(page,10);
+        log.info("N+1테스트 시작");
         Page<TeamUser> myTeamUser = teamUserRepository.findAllByUser(user,pageable);
+        log.info("N+1테스트 끝");
         Page<Team>  myTeam = myTeamUser.map(TeamUser::getTeam);
+
         Page<TeamsResponse> myTeamResponse = myTeam.map(TeamsResponse::from);
         return new ResponseDto(HttpStatus.OK.value(),user.getNickname()+"님의 team 조회 성공",myTeamResponse);
     }

@@ -21,7 +21,7 @@ public class TeamController {
                                      @JwtUser User user){
         return teamService.getMyTeamListResult(user,page);
     }
-    @PostMapping("/team")
+    @PostMapping
     public ResponseDto makeTeam(@RequestBody MakeTeam makeTeam,@JwtUser User user){
         return teamService.makeTeamResult(makeTeam,user);
     }
