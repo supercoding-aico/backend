@@ -5,6 +5,7 @@ import com.github.aico.repository.user.User;
 import com.github.aico.service.team.TeamService;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
+import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,10 @@ public class TeamController {
     @GetMapping("/{teamId}/member")
     public ResponseDto getTeamMember(@JwtUser User user,@PathVariable Long teamId){
         return teamService.getTeamMemberResult(user,teamId);
+    }
+    @DeleteMapping("/leave/{teamId}")
+    public ResponseDto leaveTeam(@JwtUser User user, @PathVariable Long teamId, @RequestBody LeaveTeamMember leaveTeamMember){
+        return teamService.leaveTeamResult(user,teamId,leaveTeamMember);
     }
 
 }

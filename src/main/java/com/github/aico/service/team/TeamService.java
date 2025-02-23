@@ -6,14 +6,17 @@ import com.github.aico.repository.team_user.TeamRole;
 import com.github.aico.repository.team_user.TeamUser;
 import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
+import com.github.aico.repository.user.UserRepository;
 import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.team.response.TeamsResponse;
+import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
 import com.github.aico.web.dto.teamUser.response.TeamMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ import java.util.List;
 public class TeamService {
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
     /**
      * 내 팀 리스트 조회
      * */
@@ -89,7 +93,7 @@ public class TeamService {
         return new ResponseDto(HttpStatus.NO_CONTENT.value(),"삭제 성공");
     }
     /**
-     * 팀 멤버 조회
+     * 팀 멤버 조회(팀원이 아닐 경우에는 해당 팀의 멤버 조회 불가)
      * */
     public ResponseDto getTeamMemberResult(User user, Long teamId) {
         Team team = teamRepository.findById(teamId)
@@ -104,6 +108,97 @@ public class TeamService {
         List<TeamMember> teamMembers = teamUsers.stream().map(TeamMember::from).toList();
         return new ResponseDto(HttpStatus.OK.value(),"조회 성공", teamMembers);
     }
+    /**
+     * 팀 탈퇴
+     * */
+    @Transactional
+    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
+        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
+        teamUsers.forEach((tu)->log.info(tu.getUser().getUserId()+" "));
+        TeamRole teamRole = checkTeamRole(team,user);
+        Long leaveUserId = leaveTeamMember.getUserId();
+        //동시성을 위해 Lock 사용
+        List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLock(team,TeamRole.MANAGER);
+        User leaveUser = userRepository.findById(leaveUserId)
+                .orElseThrow(()-> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
+        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,leaveUser)
+                .orElseThrow(()->new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
+        //본인은 본인 탈퇴만 가능 매니저는 다른 팀원(매니저도 포함) 탈퇴 가능/최소 한명의 매니저는 필요
+        if (teamRole.equals(TeamRole.MANAGER)){
+            //동시성 고려해보기
+            handleManagerLeave(team, user, leaveUserId, teamManagers, teamUser);
+        }//역할이 Member일 때
+        else {
+            handleMemberLeave(user, leaveUserId, teamUser);
+        }
+        return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
+    }
+    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
+        if (teamManagers.size() == 1) {
+            // 매니저가 1명일 때
+            // 본인은 탈퇴 불가
+            if (leaveUserId.equals(user.getUserId())) {
+                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
+            } else { //다른 유저는 탈퇴 가능
+                teamUserRepository.delete(teamUser);
+            } //1명 아닐 때는 본인도 탈퇴 가능
+        } else {
+            teamUserRepository.delete(teamUser);
+        }
+    }
+    private void handleMemberLeave(User user, Long leaveUserId, TeamUser teamUser) {
+        if (leaveUserId.equals(user.getUserId())) {
+            teamUserRepository.delete(teamUser);
+        } else {
+            throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
+        }
+    }
+//    @Transactional
+//    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
+//        Team team = teamRepository.findById(teamId)
+//                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
+//        TeamRole teamRole = checkTeamRole(team,user);
+//        Long leaveUserId = leaveTeamMember.getUserId();
+//        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
+//        List<TeamUser> teamManagers = teamUsers.stream()
+//                .filter((tu)->tu.getTeamRole().equals(TeamRole.MANAGER))
+//                .toList();
+//        User leaveUser = userRepository.findById(leaveUserId)
+//                .orElseThrow(()-> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
+//        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,leaveUser)
+//                .orElseThrow(()->new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
+//        //본인은 본인 탈퇴만 가능 매니저는 다른 팀원(매니저도 포함) 탈퇴 가능/최소 한명의 매니저는 필요
+//        if (teamRole.equals(TeamRole.MANAGER)){
+//            //동시성 고려해보기
+//            //매니저 인원이 1명일 때
+//            if (teamManagers.size() == 1){
+//                //탈퇴하려는 인원이 본인 아이디랑 같을 때
+//                if (leaveUserId.equals(user.getUserId())){
+//                    throw new BadRequestException("현재 Manager의 수는" + teamManagers.size() +"명 본인 혼자이므로 탈퇴 불가능합니다." );
+//                }// 다른 사람을 추방할 때
+//                else {
+//                    teamUserRepository.delete(teamUser);
+//                    return new ResponseDto(HttpStatus.NO_CONTENT.value(),"팀 탈퇴처리되었습니다.");
+//                }
+//            }//매니저 인원이 1명이 아닐 때
+//            else {
+//                teamUserRepository.delete(teamUser);
+//                return new ResponseDto(HttpStatus.NO_CONTENT.value(),"팀 탈퇴처리되었습니다.");
+//            }
+//        }//역할이 Member일 때
+//        else {
+//            //본인만 탈퇴 가능
+//            if (leaveUserId.equals(user.getUserId())){
+//                teamUserRepository.delete(teamUser);
+//                return new ResponseDto(HttpStatus.NO_CONTENT.value(),"팀 탈퇴처리되었습니다.");
+//            }else {
+//                throw new BadRequestException("해당 유저의 역할은" + teamUser.getTeamRole()+"이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
+//            }
+//        }
+//
+//    }
 
 
     /**
