@@ -1,6 +1,7 @@
 package com.github.aico.repository.team;
 
 import com.github.aico.repository.base.BaseEntity;
+import com.github.aico.web.dto.team.request.MakeTeam;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,4 +19,13 @@ public class Team extends BaseEntity {
     private Long teamId;
     @Column(name = "team_name", nullable = false)
     private String teamName;
+
+    public static Team from(MakeTeam makeTeam){
+        return Team.builder()
+                .teamName(makeTeam.getName())
+                .build();
+    }
+    public void updateTeam(MakeTeam makeTeam){
+        this.teamName = makeTeam.getName();
+    }
 }
