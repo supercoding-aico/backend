@@ -94,7 +94,7 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            User user = userRepository.findByEmailUserFetchJoin(loginRequest.getEmail())
+            User user = userRepository.findByEmailWithRoles(loginRequest.getEmail())
                     .orElseThrow(() -> new NotFoundException("User를 찾을 수 없습니다."));
             List<String> roles = user.getUserRoles()
                     .stream().map(UserRole::getRole)

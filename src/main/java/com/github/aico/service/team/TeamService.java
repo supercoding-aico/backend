@@ -120,7 +120,7 @@ public class TeamService {
         TeamRole teamRole = checkTeamRole(team,user);
         Long leaveUserId = leaveTeamMember.getUserId();
         //동시성을 위해 Lock 사용
-        List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLock(team,TeamRole.MANAGER);
+        List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team,TeamRole.MANAGER);
         User leaveUser = userRepository.findById(leaveUserId)
                 .orElseThrow(()-> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,leaveUser)

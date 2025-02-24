@@ -31,7 +31,7 @@ public class ChatService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀은 존재하지 않습니다."));
         Pageable pageable = PageRequest.of(page,10,Sort.by( Sort.Direction.DESC,"createdAt"));
-        List<TeamUser> teamUsers = teamUserRepository.findAllByTeamFetchUser(team);
+        List<TeamUser> teamUsers = teamUserRepository.findTeamUsersByTeamFetchUser(team);
         Page<Chat> chats = chatRepository.findByTeamUserInOrderByCreatedAtDesc(teamUsers,pageable);
         Page<ChatResponse> chatResponses = chats.map(ChatResponse::from);
         return new ResponseDto(HttpStatus.OK.value(),team.getTeamName() + "에 대한 채팅 리스트 조회",chatResponses);
