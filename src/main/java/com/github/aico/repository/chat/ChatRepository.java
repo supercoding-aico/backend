@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat,Long> {
-    @EntityGraph(attributePaths = {"teamUser.user"})
+
     Page<Chat> findByTeamUserInOrderByCreatedAtDesc(List<TeamUser> teamUsers, Pageable pageable);
 }
