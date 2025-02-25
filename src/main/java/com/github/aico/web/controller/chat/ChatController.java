@@ -1,5 +1,7 @@
 package com.github.aico.web.controller.chat;
 
+import com.github.aico.repository.user.JwtUser;
+import com.github.aico.repository.user.User;
 import com.github.aico.service.chat.ChatService;
 import com.github.aico.web.dto.base.ResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +15,9 @@ import org.springframework.web.bind.annotation.*;
 public class ChatController {
     private final ChatService chatService;
     @GetMapping("/{teamId}")
-    public ResponseDto getTeamChatList(@PathVariable Long teamId,
+    public ResponseDto getTeamChatList(@JwtUser User user,
+                                        @PathVariable Long teamId,
                                        @RequestParam(required = false,defaultValue = "0",value = "page") Integer page){
-        return chatService.getTeamChatListResult(teamId,page);
+        return chatService.getTeamChatListResult(user,teamId,page);
     }
 }

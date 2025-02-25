@@ -21,6 +21,7 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
     Page<TeamUser> findAllByUser(User user, Pageable pageable);
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
+    boolean existsByTeamAndUser(Team team, User user);
 
     List<TeamUser> findAllByTeam(Team team);
 //    @Query("SELECT tu FROM TeamUser tu JOIN FETCH tu.user WHERE tu.team = :team")
