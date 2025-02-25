@@ -16,14 +16,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TeamUserRepository extends JpaRepository<TeamUser,Long> {
+public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamUserRepository {
     @EntityGraph(attributePaths = {"team"})
     Page<TeamUser> findAllByUser(User user, Pageable pageable);
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
+    boolean existsByTeamAndUser(Team team, User user);
 
     List<TeamUser> findAllByTeam(Team team);
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT tu FROM TeamUser tu WHERE tu.team = :team AND tu.teamRole = :role")
-    List<TeamUser> findByTeamAndRoleWithLock(@Param("team") Team team, @Param("role") TeamRole role);
+//    @Query("SELECT tu FROM TeamUser tu JOIN FETCH tu.user WHERE tu.team = :team")
+//    List<TeamUser> findAllByTeamFetchUser(Team team);
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Query("SELECT tu FROM TeamUser tu WHERE tu.team = :team AND tu.teamRole = :role")
+//    List<TeamUser> findByTeamAndRoleWithLock(@Param("team") Team team, @Param("role") TeamRole role);
 }

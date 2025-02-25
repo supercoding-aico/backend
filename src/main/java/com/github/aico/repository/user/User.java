@@ -4,6 +4,7 @@ import com.github.aico.repository.base.BaseEntity;
 import com.github.aico.repository.user_role.UserRole;
 import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.web.dto.auth.request.SignUpRequest;
+import com.github.aico.web.dto.user.request.ProfileUpdateRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,7 +29,7 @@ public class User extends BaseEntity {
     private String password;
     @Column(name = "phone_number", length = 11, nullable = true)
     private String phoneNumber;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserRole> userRoles;
 
     public static User from(SignUpRequest signUpRequest){
@@ -44,4 +45,11 @@ public class User extends BaseEntity {
         }
         this.password = password;
     }
+
+    public void updateProfile(ProfileUpdateRequest request) {
+        if (request.getNickname() != null && !request.getNickname().isEmpty()) {
+            this.nickname = request.getNickname();
+        }
+    }
+
 }
