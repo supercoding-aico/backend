@@ -16,7 +16,7 @@ public class Chat extends BaseEntity {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_id")
     private Long chatId;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "team_user_id")
     private TeamUser teamUser;
     @Column(name = "content",length = 255)

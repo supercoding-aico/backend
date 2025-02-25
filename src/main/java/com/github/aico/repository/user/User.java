@@ -28,7 +28,7 @@ public class User extends BaseEntity {
     private String password;
     @Column(name = "phone_number", length = 11, nullable = true)
     private String phoneNumber;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserRole> userRoles;
 
     public static User from(SignUpRequest signUpRequest){
