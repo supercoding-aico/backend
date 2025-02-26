@@ -48,6 +48,21 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256,secretKey)
                 .compact();
     }
+    public String createInvitationToken(String email, Long teamId) {
+        Claims claims = Jwts.claims().setSubject(email);
+        claims.put("invitation", true);  // 초대 토큰임을 명시
+        claims.put("teamId", teamId);    // 초대받은 팀 ID
+
+        Date now = new Date();
+        long invitationTokenValidity = 24 * 60 * 60 * 1000L; // 24시간
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + invitationTokenValidity))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
 
     public String resolveToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization");

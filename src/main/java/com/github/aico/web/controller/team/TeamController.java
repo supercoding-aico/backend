@@ -3,6 +3,7 @@ package com.github.aico.web.controller.team;
 import com.github.aico.repository.user.JwtUser;
 import com.github.aico.repository.user.User;
 import com.github.aico.service.team.TeamService;
+import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
@@ -43,4 +44,14 @@ public class TeamController {
         return teamService.leaveTeamResult(user,teamId,leaveTeamMember);
     }
 
+    @PostMapping("/{teamId}/invite")
+    public ResponseDto memberInvite(@PathVariable Long teamId,@JwtUser User user, @RequestBody EmailDuplicate inviteEmail){
+        return teamService.memberInviteResult(teamId,user,inviteEmail);
+
+    }
+    @GetMapping("/{teamId}")
+    public String memberInvite(@PathVariable Long teamId, @RequestParam("token")String inviteToken){
+        return inviteToken;
+
+    }
 }

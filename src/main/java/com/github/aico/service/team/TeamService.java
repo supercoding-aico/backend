@@ -1,5 +1,6 @@
 package com.github.aico.service.team;
 
+import com.github.aico.config.security.JwtTokenProvider;
 import com.github.aico.repository.team.Team;
 import com.github.aico.repository.team.TeamRepository;
 import com.github.aico.repository.team_user.TeamRole;
@@ -9,18 +10,24 @@ import com.github.aico.repository.user.User;
 import com.github.aico.repository.user.UserRepository;
 import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.service.exceptions.NotFoundException;
+import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.team.response.TeamsResponse;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
 import com.github.aico.web.dto.teamUser.response.TeamMember;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.weaver.ast.Not;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +40,10 @@ public class TeamService {
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JavaMailSender sender;
+    @Value("${spring.mail.username}")
+    private String senderEmail;
     /**
      * 내 팀 리스트 조회
      * */
@@ -155,6 +166,18 @@ public class TeamService {
             throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
         }
     }
+    public ResponseDto memberInviteResult(Long teamId, User user, EmailDuplicate inviteEmail) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀이 존재하지 않습니다."));
+        //공통 메소드로 빼기
+        if (!teamUserRepository.existsByTeamAndUser(team,user)){
+            throw new NotFoundException(teamId + "에 해당하는 팀원이 아닙니다.");
+        }
+        String inviteToken = jwtTokenProvider.createInvitationToken(inviteEmail.getEmail(),team.getTeamId());
+        MimeMessage sendMessage = createMessage(inviteEmail.getEmail(),team,inviteToken);
+        sender.send(sendMessage);
+        return new ResponseDto(HttpStatus.OK.value(),"token : " + inviteToken);
+    }
 //    @Transactional
 //    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
 //        Team team = teamRepository.findById(teamId)
@@ -210,6 +233,47 @@ public class TeamService {
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,user)
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님은 " + team.getTeamId()+"에 가입되어 있지 않습니다."));
         return teamUser.getTeamRole();
+    }
+    /**
+     * 메일에 보낼 메시지 만들기
+     * */
+    public MimeMessage createMessage(String inviteEmail,Team team,String inviteToken){
+
+        MimeMessage mimeMessage = sender.createMimeMessage();
+
+
+        String backendUrl = "http://localhost:8080/api/team/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
+        try {
+            mimeMessage.setFrom(senderEmail);
+            mimeMessage.setRecipients(MimeMessage.RecipientType.TO,inviteEmail);
+            mimeMessage.setSubject("Ai-Co 프로젝트 팀명 : " + team.getTeamName() + "초대 링크입니다." );
+
+
+            StringBuilder body = new StringBuilder();
+            body.append("<h1>팀 초대</h1>")
+                    .append("<h3>팀에 초대되었습니다! 아래 버튼을 눌러 가입하세요.</h3><br>")
+                    .append("<table cellspacing='0' cellpadding='0' border='0' style='margin: 10px 0;'>")
+                    .append("<tr><td align='center' bgcolor='#007BFF' style='border-radius: 5px;'>")
+                    .append("<a href='").append(backendUrl)
+                    .append("' style='display: inline-block; font-size: 16px; color: white; background-color: #007BFF; text-decoration: none; padding: 10px 20px; border-radius: 5px;'>")
+                    .append("Join Team</a>")
+                    .append("</td></tr>")
+                    .append("</table>");
+
+            String emailBody = body.toString();
+            mimeMessage.setText(emailBody,"UTF-8", "html");
+        }catch (MessagingException messageE){
+             messageE.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+            }
+        return mimeMessage;
+    }
+    /**
+     * 초대 토큰 생성
+     * */
+    public String createInviteToken(String inviteEmail,Long teamId){
+        return jwtTokenProvider.createInvitationToken(inviteEmail,teamId);
     }
 
 
