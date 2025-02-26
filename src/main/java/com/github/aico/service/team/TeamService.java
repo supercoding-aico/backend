@@ -19,6 +19,7 @@ import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
 import com.github.aico.web.dto.teamUser.response.TeamMember;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -65,7 +67,7 @@ public class TeamService {
     public ResponseDto makeTeamResult(MakeTeam makeTeam, User user) {
         Team team = Team.from(makeTeam);
         Team successTeam = teamRepository.save(team);
-        TeamUser teamUser = TeamUser.of(successTeam,user);
+        TeamUser teamUser = TeamUser.of(successTeam,user,TeamRole.MANAGER);
         teamUserRepository.save(teamUser);
 
         return new ResponseDto(HttpStatus.CREATED.value(),successTeam.getTeamName() + "팀이 성공적으로 만들어졌습니다.");
@@ -158,7 +160,28 @@ public class TeamService {
         MimeMessage sendMessage = createMessage(inviteEmail.getEmail(),team,inviteToken);
         sender.send(sendMessage);
         redisUtil.setDataExpire(inviteEmail.getEmail(),inviteToken,60*5L);
-        return new ResponseDto(HttpStatus.OK.value(),"token : " + inviteToken);
+        return new ResponseDto(HttpStatus.OK.value(),inviteEmail.getEmail()+ "에 초대 링크 발송되었습니다.","token : " + inviteToken);
+    }
+    public void joinTeamResult(Long teamId, String inviteToken, HttpServletResponse response) {
+        String tokenEmail = jwtTokenProvider.getEmail(inviteToken);
+        Long tokenTeamId = jwtTokenProvider.getTeamId(inviteToken);
+        log.info("tokenEmail : " + tokenEmail);
+        log.info("tokenTeamId : " + tokenTeamId);
+
+        Team joinTeam = teamRepository.findById(teamId)
+                .orElse(null);
+        User user = userRepository.findByEmailWithRoles(tokenEmail)
+                .orElse(null);
+        try {
+            //팀이 유효하지 않을 때
+            //이미 팀에 가입된 유저일 때
+            //토큰이 유효하지 않을 때
+            //회원가입은 되어 있고 팀 가입이 필요할 때
+            //회원가입도 안되어 있을 때
+            getResponse(teamId, tokenEmail, response);
+        }catch (IOException ioe){
+            throw new NotFoundException("잘못된 페이지 요청입니다.");
+        }
     }
 //    @Transactional
 //    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
@@ -282,6 +305,42 @@ public class TeamService {
      * */
     public String createInviteToken(String inviteEmail,Long teamId){
         return jwtTokenProvider.createInvitationToken(inviteEmail,teamId);
+    }
+
+    private void getResponse(Long teamId, String tokenEmail, HttpServletResponse response) throws IOException {
+        // 팀이 유효하지 않을 때
+        Team joinTeam = teamRepository.findById(teamId).orElse(null);
+        if (joinTeam == null) {
+            response.sendRedirect("noTeam");
+            return;
+        }
+
+        // 이미 팀에 가입된 유저일 때
+        User user = userRepository.findByEmailWithRoles(tokenEmail).orElse(null);
+        if (user == null) {
+            response.sendRedirect("noSign");
+            return;
+        }
+        if (teamUserRepository.existsByTeamAndUser(joinTeam, user)) {
+            response.sendRedirect("alreadyTeam");
+            return;
+        }
+
+        // 토큰이 유효하지 않을 때
+        if (redisUtil.getData(tokenEmail) == null) {
+            response.sendRedirect("tokennotvalid");
+            return;
+        }
+
+        // 회원가입은 되어 있고 팀이 아닐 때
+        TeamUser teamUser = teamUserRepository.findByTeamAndUser(joinTeam, user).orElse(null);
+        if (teamUser == null) {
+            TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
+            teamUserRepository.save(joinTeamUser);
+            redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
+            response.sendRedirect("sign/noteam");
+            return;
+        }
     }
 
 

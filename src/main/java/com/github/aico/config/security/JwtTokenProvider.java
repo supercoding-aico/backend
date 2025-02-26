@@ -104,4 +104,13 @@ public class JwtTokenProvider {
                 .getBody()
                 .getSubject();
     }
+    public Long getTeamId(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+
+        // teamId를 claims에서 추출
+        return claims.get("teamId", Long.class);
+    }
 }
