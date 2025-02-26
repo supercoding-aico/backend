@@ -27,6 +27,10 @@ spring:
           starttls:
             enable: true
           auth: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret-key-source: ENC(TH3JEhaFp/YER6btYCYQ99ZH9nDc/zuXPIVNM/JnshmEAOsccENF1WNlkkII/0xt)

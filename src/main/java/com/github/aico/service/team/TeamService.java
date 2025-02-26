@@ -8,6 +8,7 @@ import com.github.aico.repository.team_user.TeamUser;
 import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
 import com.github.aico.repository.user.UserRepository;
+import com.github.aico.service.redis.RedisUtil;
 import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.auth.request.EmailDuplicate;
@@ -20,14 +21,12 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +43,7 @@ public class TeamService {
     private final JavaMailSender sender;
     @Value("${spring.mail.username}")
     private String senderEmail;
+    private final RedisUtil redisUtil;
     /**
      * 내 팀 리스트 조회
      * */
@@ -146,26 +146,7 @@ public class TeamService {
         }
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
-    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
-        if (teamManagers.size() == 1) {
-            // 매니저가 1명일 때
-            // 본인은 탈퇴 불가
-            if (leaveUserId.equals(user.getUserId())) {
-                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
-            } else { //다른 유저는 탈퇴 가능
-                teamUserRepository.delete(teamUser);
-            } //1명 아닐 때는 본인도 탈퇴 가능
-        } else {
-            teamUserRepository.delete(teamUser);
-        }
-    }
-    private void handleMemberLeave(User user, Long leaveUserId, TeamUser teamUser) {
-        if (leaveUserId.equals(user.getUserId())) {
-            teamUserRepository.delete(teamUser);
-        } else {
-            throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
-        }
-    }
+
     public ResponseDto memberInviteResult(Long teamId, User user, EmailDuplicate inviteEmail) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀이 존재하지 않습니다."));
@@ -176,6 +157,7 @@ public class TeamService {
         String inviteToken = jwtTokenProvider.createInvitationToken(inviteEmail.getEmail(),team.getTeamId());
         MimeMessage sendMessage = createMessage(inviteEmail.getEmail(),team,inviteToken);
         sender.send(sendMessage);
+        redisUtil.setDataExpire(inviteEmail.getEmail(),inviteToken,60*5L);
         return new ResponseDto(HttpStatus.OK.value(),"token : " + inviteToken);
     }
 //    @Transactional
@@ -233,6 +215,32 @@ public class TeamService {
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,user)
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님은 " + team.getTeamId()+"에 가입되어 있지 않습니다."));
         return teamUser.getTeamRole();
+    }
+    /**
+     * 매니저가 탈퇴할 때
+     * */
+    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
+        if (teamManagers.size() == 1) {
+            // 매니저가 1명일 때
+            // 본인은 탈퇴 불가
+            if (leaveUserId.equals(user.getUserId())) {
+                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
+            } else { //다른 유저는 탈퇴 가능
+                teamUserRepository.delete(teamUser);
+            } //1명 아닐 때는 본인도 탈퇴 가능
+        } else {
+            teamUserRepository.delete(teamUser);
+        }
+    }
+    /**
+     * 일반 멤버가 탈퇴할 때
+     * */
+    private void handleMemberLeave(User user, Long leaveUserId, TeamUser teamUser) {
+        if (leaveUserId.equals(user.getUserId())) {
+            teamUserRepository.delete(teamUser);
+        } else {
+            throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
+        }
     }
     /**
      * 메일에 보낼 메시지 만들기
