@@ -29,8 +29,9 @@ spring:
           auth: true
   data:
     redis:
-      host: localhost
+      host: ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7) # 추후 ec2 프라이빗 아이피로 변경 필요
       port: 6379
+      password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
 
 jwt:
   secret-key-source: ENC(TH3JEhaFp/YER6btYCYQ99ZH9nDc/zuXPIVNM/JnshmEAOsccENF1WNlkkII/0xt)

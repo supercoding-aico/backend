@@ -149,6 +149,7 @@ public class TeamService {
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
 
+    @Transactional
     public ResponseDto memberInviteResult(Long teamId, User user, EmailDuplicate inviteEmail) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀이 존재하지 않습니다."));
