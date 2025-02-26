@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class JwtTokenProvider {
                 .encodeToString(secretKeySource.getBytes());
     }
     private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+    private  final long refreshTokenValidMilisecond = 1000L * 60L * 60L * 24L * 7L;
 
     private final UserDetailsService userDetailsService;
     public String createToken(String email, List<String> roles){
@@ -46,6 +48,19 @@ public class JwtTokenProvider {
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime()+tokenValidMilisecond))
                 .signWith(SignatureAlgorithm.HS256,secretKey)
+                .compact();
+    }
+    public String createRefreshToken(String email){
+        Claims claims = Jwts.claims()
+                .setSubject(email);
+
+        Date now = new Date();
+        // 리프레시 토큰의 만료 시간을 7일로 설정
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshTokenValidMilisecond))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
     public String createInvitationToken(String email, Long teamId) {
@@ -64,10 +79,21 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+//    public String resolveToken(HttpServletRequest request) {
+//        String token = request.getHeader("Authorization");
+//        if (token != null && token.startsWith("Bearer ")) {
+//            return token.substring(7); // "Bearer " 접두사 제거
+//        }
+//        return null;
+//    }
     public String resolveToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            return token.substring(7); // "Bearer " 접두사 제거
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();  // 쿠키에서 토큰 값 추출
+                }
+            }
         }
         return null;
     }
