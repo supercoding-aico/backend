@@ -156,6 +156,10 @@ public class TeamService {
         if (!teamUserRepository.existsByTeamAndUser(team,user)){
             throw new NotFoundException(teamId + "에 해당하는 팀원이 아닙니다.");
         }
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(team);
+        if (teamUsers.size() >=10 ){
+            throw new BadRequestException("현재 팀원 의 수 : " + teamUsers.size() + "명이므로 더 이상 초대가 불가능합니다.(팀원 최대 10명)");
+        }
         String inviteToken = jwtTokenProvider.createInvitationToken(inviteEmail.getEmail(),team.getTeamId());
         MimeMessage sendMessage = createMessage(inviteEmail.getEmail(),team,inviteToken);
         sender.send(sendMessage);
@@ -315,12 +319,10 @@ public class TeamService {
             return;
         }
 
-        // 이미 팀에 가입된 유저일 때
+
         User user = userRepository.findByEmailWithRoles(tokenEmail).orElse(null);
-        if (user == null) {
-            response.sendRedirect("noSign");
-            return;
-        }
+
+        //이미 팀에 가입되어 있을 때
         if (teamUserRepository.existsByTeamAndUser(joinTeam, user)) {
             response.sendRedirect("alreadyTeam");
             return;
@@ -335,10 +337,20 @@ public class TeamService {
         // 회원가입은 되어 있고 팀이 아닐 때
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(joinTeam, user).orElse(null);
         if (teamUser == null) {
+            List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
+            if (teamUsers.size() >= 10){
+                response.sendRedirect("sign/joinTeamX");
+                return;
+            }
             TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
             teamUserRepository.save(joinTeamUser);
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
             response.sendRedirect("sign/noteam");
+            return;
+        }
+        // 회원가입이 되어 있지 않을 때
+        if (user == null) {
+            response.sendRedirect("noSign");
             return;
         }
     }
