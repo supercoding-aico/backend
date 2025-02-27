@@ -50,7 +50,7 @@ public class TeamController {
         return teamService.memberInviteResult(teamId,user,inviteEmail);
 
     }
-    @GetMapping("/{teamId}")
+    @GetMapping("/join/{teamId}")
     public void joinTeam(@PathVariable Long teamId, @RequestParam("token")String inviteToken, HttpServletResponse response){
         teamService.joinTeamResult(teamId,inviteToken,response);
 

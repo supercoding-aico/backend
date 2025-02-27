@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -31,8 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        RequestMatcher permitAllMatcher = new MvcRequestMatcher(introspector, "/api/auth/**"); // `permitAll()`과 동일한 설정
+//        RequestMatcher permitAllMatcher = new MvcRequestMatcher(introspector, "/api/auth/**"); // `permitAll()`과 동일한 설정
+        RequestMatcher permitAllMatcher = new OrRequestMatcher(
+                new MvcRequestMatcher(introspector, "/api/auth/**"),
+                new MvcRequestMatcher(introspector, "/api/team/join/**") // /api/team/** 도 허용
+        );
         if (permitAllMatcher.matches(request)) {
+
             filterChain.doFilter(request, response);
             return;
         }

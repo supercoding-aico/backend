@@ -35,8 +35,8 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder()
                 .encodeToString(secretKeySource.getBytes());
     }
-//    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
-    private final long tokenValidMilisecond = 1000L * 60; // 1분
+    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+//    private final long tokenValidMilisecond = 1000L * 60; // 1분
     private  final long refreshTokenValidMilisecond = 1000L * 60L * 60L * 24L * 7L;
 
     private final UserDetailsService userDetailsService;

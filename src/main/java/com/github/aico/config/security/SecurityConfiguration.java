@@ -37,8 +37,8 @@ public class SecurityConfiguration {
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(c-> c.configurationSource(corsConfig()))
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated() // 나머지 요청은 인증이 필요
+//                        .requestMatchers("/api/auth/**","/api/team/join/**").permitAll()
+                        .anyRequest().permitAll() // 나머지 요청은 인증이 필요
                 )
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())

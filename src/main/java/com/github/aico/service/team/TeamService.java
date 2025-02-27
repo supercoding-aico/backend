@@ -167,6 +167,7 @@ public class TeamService {
         redisUtil.setDataExpire(inviteEmail.getEmail(),inviteToken,60*5L);
         return new ResponseDto(HttpStatus.OK.value(),inviteEmail.getEmail()+ "에 초대 링크 발송되었습니다.","token : " + inviteToken);
     }
+    @Transactional
     public void joinTeamResult(Long teamId, String inviteToken, HttpServletResponse response) {
         String tokenEmail = jwtTokenProvider.getEmail(inviteToken);
         Long tokenTeamId = jwtTokenProvider.getTeamId(inviteToken);
@@ -183,7 +184,7 @@ public class TeamService {
             //토큰이 유효하지 않을 때
             //회원가입은 되어 있고 팀 가입이 필요할 때
             //회원가입도 안되어 있을 때
-            getResponse(teamId, tokenEmail, response);
+            getResponse(teamId, tokenEmail, response,inviteToken);
         }catch (IOException ioe){
             throw new NotFoundException("잘못된 페이지 요청입니다.");
         }
@@ -278,7 +279,7 @@ public class TeamService {
         MimeMessage mimeMessage = sender.createMimeMessage();
 
 
-        String backendUrl = "http://localhost:8080/api/team/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
+        String backendUrl = "https://www.ai-co.store/api/team/join/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
         try {
             mimeMessage.setFrom(senderEmail);
             mimeMessage.setRecipients(MimeMessage.RecipientType.TO,inviteEmail);
@@ -312,11 +313,11 @@ public class TeamService {
         return jwtTokenProvider.createInvitationToken(inviteEmail,teamId);
     }
 
-    private void getResponse(Long teamId, String tokenEmail, HttpServletResponse response) throws IOException {
+    private void getResponse(Long teamId, String tokenEmail, HttpServletResponse response,String inviteToken) throws IOException {
         // 팀이 유효하지 않을 때
         Team joinTeam = teamRepository.findById(teamId).orElse(null);
         if (joinTeam == null) {
-            response.sendRedirect("noTeam");
+            response.sendRedirect("http://localhost:3000?code=404");    // http://localhost:3000?code=404
             return;
         }
 
@@ -325,13 +326,13 @@ public class TeamService {
 
         //이미 팀에 가입되어 있을 때
         if (teamUserRepository.existsByTeamAndUser(joinTeam, user)) {
-            response.sendRedirect("alreadyTeam");
+            response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }
 
         // 토큰이 유효하지 않을 때
         if (redisUtil.getData(tokenEmail) == null) {
-            response.sendRedirect("tokennotvalid");
+            response.sendRedirect("http://localhost:3000?code=401");// http://localhost:3000?code=401
             return;
         }
 
@@ -340,18 +341,18 @@ public class TeamService {
         if (teamUser == null) {
             List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
             if (teamUsers.size() >= 10){
-                response.sendRedirect("sign/joinTeamX");
+                response.sendRedirect("http://localhost:3000?code=400"); // http://localhost:3000?code=400
                 return;
             }
             TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
             teamUserRepository.save(joinTeamUser);
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
-            response.sendRedirect("sign/noteam");
+            response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }
         // 회원가입이 되어 있지 않을 때
         if (user == null) {
-            response.sendRedirect("noSign");
+            response.sendRedirect("http://localhost:3000/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
             return;
         }
     }
