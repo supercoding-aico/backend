@@ -3,6 +3,7 @@ package com.github.aico.config.security;
 import com.github.aico.repository.userDetails.CustomUserDetails;
 import com.github.aico.service.exceptions.TokenValidateException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -34,7 +35,8 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder()
                 .encodeToString(secretKeySource.getBytes());
     }
-    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+//    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+    private final long tokenValidMilisecond = 1000L * 60; // 1분
     private  final long refreshTokenValidMilisecond = 1000L * 60L * 60L * 24L * 7L;
 
     private final UserDetailsService userDetailsService;
@@ -113,7 +115,10 @@ public class JwtTokenProvider {
             return claims.getExpiration().after(now);
         }catch (TokenValidateException tve){
             throw new TokenValidateException("토큰이 유효하지 않습니다.");
+        }catch (ExpiredJwtException eje){
+            throw new TokenValidateException("토큰이 유효하지 않습니다.");
         }
+
 
     }
 

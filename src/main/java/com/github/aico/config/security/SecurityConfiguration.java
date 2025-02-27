@@ -1,6 +1,7 @@
 package com.github.aico.config.security;
 
 import com.github.aico.web.filter.JwtAuthenticationFilter;
+import com.github.aico.web.filter.JwtExceptionFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtExceptionFilter jwtExceptionFilter;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,12 +38,14 @@ public class SecurityConfiguration {
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(c-> c.configurationSource(corsConfig()))
                 .authorizeHttpRequests((requests) -> requests
-                        .anyRequest().permitAll()  // 모든 요청에 대해 인증 없이 접근 허용
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated() // 나머지 요청은 인증이 필요
                 )
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())
                         .accessDeniedHandler(new CustomerAccessDeniedHandler()))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);;
         return http.build();
     }
     private CorsConfigurationSource corsConfig() {
