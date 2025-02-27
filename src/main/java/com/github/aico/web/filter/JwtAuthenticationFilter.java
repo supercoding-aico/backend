@@ -45,7 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }catch (Exception e){
 //            throw new TokenValidateException("토큰이 유효하지 않습니다.");
+            e.printStackTrace();
             CustomErrorSend.handleException(response, e.getMessage());
+            return;
 //            e.printStackTrace();
         }
         filterChain.doFilter(request,response);
