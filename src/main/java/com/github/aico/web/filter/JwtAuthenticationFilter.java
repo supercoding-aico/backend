@@ -14,31 +14,40 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+    private final HandlerMappingIntrospector introspector;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        RequestMatcher permitAllMatcher = new MvcRequestMatcher(introspector, "/api/auth/**"); // `permitAll()`과 동일한 설정
+        if (permitAllMatcher.matches(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String token = jwtTokenProvider.resolveToken(request);
+
         try {
             if (token != null && jwtTokenProvider.validateToken(token)){
                 Authentication auth = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }catch (Exception e){
-            e.getMessage();
-            e.printStackTrace();
+//            throw new TokenValidateException("토큰이 유효하지 않습니다.");
+            CustomErrorSend.handleException(response, e.getMessage());
+//            e.printStackTrace();
         }
-
-
-
         filterChain.doFilter(request,response);
 
     }
