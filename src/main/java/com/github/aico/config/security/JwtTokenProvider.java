@@ -3,6 +3,7 @@ package com.github.aico.config.security;
 import com.github.aico.repository.userDetails.CustomUserDetails;
 import com.github.aico.service.exceptions.TokenValidateException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -81,11 +82,8 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
             Date now = new Date();
-            if (claims.getExpiration().before(now)){
-                throw new TokenValidateException("해당 토큰 유효 기간이 지났습니다.");
-            }
             return claims.getExpiration().after(now);
-        }catch (TokenValidateException tve){
+        }catch (ExpiredJwtException eje){
             throw new TokenValidateException("토큰이 유효하지 않습니다.");
         }
 
