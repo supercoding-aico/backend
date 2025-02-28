@@ -167,6 +167,7 @@ public class TeamService {
         redisUtil.setDataExpire(inviteEmail.getEmail(),inviteToken,60*5L);
         return new ResponseDto(HttpStatus.OK.value(),inviteEmail.getEmail()+ "에 초대 링크 발송되었습니다.","token : " + inviteToken);
     }
+    @Transactional
     public void joinTeamResult(Long teamId, String inviteToken, HttpServletResponse response) {
         String tokenEmail = jwtTokenProvider.getEmail(inviteToken);
         Long tokenTeamId = jwtTokenProvider.getTeamId(inviteToken);

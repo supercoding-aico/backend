@@ -1,5 +1,6 @@
 package com.github.aico.web.filter;
 
+import com.github.aico.config.security.CustomErrorSend;
 import com.github.aico.config.security.JwtTokenProvider;
 import com.github.aico.service.exceptions.TokenValidateException;
 import jakarta.servlet.FilterChain;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
@@ -20,6 +22,7 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final HandlerMappingIntrospector introspector;
@@ -41,8 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Authentication auth = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-        }catch (TokenValidateException tokenValidateException){
-            throw new TokenValidateException("토큰이 유효하지 않습니다.");
+        }catch (TokenValidateException e){
+//            throw new TokenValidateException("토큰이 유효하지 않습니다.");
+            e.printStackTrace();
+            CustomErrorSend.handleException(response, e.getMessage());
+            return;
+//            e.printStackTrace();
         }
 
 

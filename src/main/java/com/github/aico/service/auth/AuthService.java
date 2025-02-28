@@ -107,6 +107,11 @@ public class AuthService {
                     .stream().map(UserRole::getRole)
                     .map(Role::getRoleName)
                     .collect(Collectors.toList());
+            String refresh = jwtTokenProvider.createRefreshToken(loginRequest.getEmail());
+            if (!refreshTokenRepository.existsByUser(user)){
+                RefreshToken refreshToken = RefreshToken.of(user,refresh);
+                refreshTokenRepository.save(refreshToken);
+            }
 
             return jwtTokenProvider.createToken(loginRequest.getEmail(), roles);
         }catch (Exception e) {
