@@ -61,4 +61,8 @@ public class AuthController {
         User user1 = userRepository.findByEmailWithRoles(user.getEmail()).orElseThrow(()-> new NotFoundException("유저 찾기 불가"));
         return UserInfo.from(user1);
     }
+    @PostMapping("/token/refresh")
+    public ResponseDto refreshToken(@CookieValue(value = "access_token") String accessToken,HttpServletResponse response){
+        return authService.refreshToken(accessToken,response);
+    }
 }

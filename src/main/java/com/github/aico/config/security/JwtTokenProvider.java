@@ -34,7 +34,9 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder()
                 .encodeToString(secretKeySource.getBytes());
     }
-    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+//    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+    private final long tokenValidMilisecond = 1000L * 60; // 1분
+    private  final long refreshTokenValidMilisecond = 1000L * 60L * 60L * 24L * 7L;
 
     private final UserDetailsService userDetailsService;
     public String createToken(String email, List<String> roles){
@@ -47,6 +49,19 @@ public class JwtTokenProvider {
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime()+tokenValidMilisecond))
                 .signWith(SignatureAlgorithm.HS256,secretKey)
+                .compact();
+    }
+    public String createRefreshToken(String email){
+        Claims claims = Jwts.claims()
+                .setSubject(email);
+
+        Date now = new Date();
+        // 리프레시 토큰의 만료 시간을 7일로 설정
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshTokenValidMilisecond))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
     public String createInvitationToken(String email, Long teamId) {
