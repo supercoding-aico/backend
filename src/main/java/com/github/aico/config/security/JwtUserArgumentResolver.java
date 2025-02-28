@@ -32,13 +32,10 @@ public class JwtUserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-        String token = jwtTokenProvider.resolveToken(request); // 요청에서 토큰 가져오기
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (token == null || !jwtTokenProvider.validateToken(token)) {
-            throw new TokenValidateException("유효하지 않은 토큰입니다.");
-        }
+
         if (authentication == null || !(authentication instanceof UsernamePasswordAuthenticationToken)) {
             throw new NotFoundException("인증 정보가 없습니다.");
         }
