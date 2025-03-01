@@ -2,6 +2,7 @@ package com.github.aico.repository.chat;
 
 import com.github.aico.repository.base.BaseEntity;
 import com.github.aico.repository.team_user.TeamUser;
+import com.github.aico.web.dto.chat.request.Chatting;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,5 +22,12 @@ public class Chat extends BaseEntity {
     private TeamUser teamUser;
     @Column(name = "content",length = 255)
     private String content;
+
+    public static Chat of(Chatting chatting,TeamUser teamUser){
+        return Chat.builder()
+                .teamUser(teamUser)
+                .content(chatting.getContent())
+                .build();
+    }
 
 }
