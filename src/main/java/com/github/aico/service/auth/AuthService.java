@@ -99,23 +99,14 @@ public class AuthService {
         UserRole userRole = UserRole.of(role,user);
         User saveUser = userRepository.save(user);
         userRoleRepository.save(userRole);
+        //팀가입으로 회원가입하는 경우
         if (token !=null){
-            String tokenEmail = jwtTokenProvider.getEmail(token);
-            Long tokenTeamId = jwtTokenProvider.getTeamId(token);
-            if (redisUtil.getData(tokenEmail) == null || !tokenEmail.equals(signUpRequest.getEmail())) {
-                throw new NotFoundException("초대 토큰이 유효하지 않거나 초대 받은 이메일과 가입하려는 이메일이 동일하지 않습니다..");
-            }
-            redisUtil.deleteData(tokenEmail);
-            Team joinTeam = teamRepository.findById(tokenTeamId).orElseThrow(()->new NotFoundException("가입하려는 팀이 존재하지 않습니다."));
-            List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
-            if (teamUsers.size() >= 10){
-                throw new NotFoundException("가입하려는 팀은 이미 10명이라 참여 불가능합니다.");
-            }
-            TeamUser teamUser = TeamUser.of(joinTeam,saveUser, TeamRole.MEMBER);
-            teamUserRepository.save(teamUser);
+           joinTeam(token,signUpRequest,saveUser);
         }
         return new ResponseDto(HttpStatus.CREATED.value(),user.getNickname()+"님 Ai-Co 회원가입이 완료되었습니다.");
     }
+
+
 
     /**
      * 로그인
@@ -190,5 +181,35 @@ public class AuthService {
         newCookie.setPath("/");
         newCookie.setMaxAge(60 * 60 * 24);
         response.addCookie(newCookie);
+    }
+    /**
+     * team가입
+     * */
+    private void joinTeam(String token, SignUpRequest signUpRequest,User saveUser) {
+        String tokenEmail = jwtTokenProvider.getEmail(token);
+        Long tokenTeamId = jwtTokenProvider.getTeamId(token);
+
+        // Redis에서 이메일로 저장된 데이터가 없거나 이메일이 일치하지 않으면 예외 처리
+        if (redisUtil.getData(tokenEmail) == null || !tokenEmail.equals(signUpRequest.getEmail())) {
+            throw new NotFoundException("초대 토큰이 유효하지 않거나 초대 받은 이메일과 가입하려는 이메일이 동일하지 않습니다.");
+        }
+
+        // 초대 토큰에 대한 데이터 삭제
+        redisUtil.deleteData(tokenEmail);
+
+        // 팀 ID로 팀 조회
+        Team joinTeam = teamRepository.findById(tokenTeamId)
+                .orElseThrow(() -> new NotFoundException("가입하려는 팀이 존재하지 않습니다."));
+
+        // 팀에 이미 10명이 있으면 가입 불가
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
+        if (teamUsers.size() >= 10) {
+            throw new NotFoundException("가입하려는 팀은 이미 10명이라 참여 불가능합니다.");
+        }
+
+        // 새로운 팀 유저 추가
+        TeamUser teamUser = TeamUser.of(joinTeam, saveUser, TeamRole.MEMBER);
+        teamUserRepository.save(teamUser);
+
     }
 }
