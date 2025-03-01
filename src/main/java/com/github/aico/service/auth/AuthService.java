@@ -5,6 +5,11 @@ import com.github.aico.repository.refresh.RefreshToken;
 import com.github.aico.repository.refresh.RefreshTokenRepository;
 import com.github.aico.repository.role.Role;
 import com.github.aico.repository.role.RoleRepository;
+import com.github.aico.repository.team.Team;
+import com.github.aico.repository.team.TeamRepository;
+import com.github.aico.repository.team_user.TeamRole;
+import com.github.aico.repository.team_user.TeamUser;
+import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
 import com.github.aico.repository.user.UserRepository;
 import com.github.aico.repository.user_role.UserRole;
@@ -12,6 +17,7 @@ import com.github.aico.repository.user_role.UserRoleRepository;
 import com.github.aico.service.exceptions.NotAcceptException;
 import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.service.exceptions.TokenValidateException;
+import com.github.aico.service.redis.RedisUtil;
 import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.auth.request.LoginRequest;
 import com.github.aico.web.dto.auth.request.NicknameDuplicate;
@@ -47,6 +53,9 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisUtil redisUtil;
+    private final TeamUserRepository teamUserRepository;
+    private final TeamRepository teamRepository;
     /**
      * 닉네임 중복확인
      * */
@@ -73,7 +82,8 @@ public class AuthService {
      * 회원가입
      * */
     @Transactional
-    public ResponseDto signUpResult(SignUpRequest signUpRequest) {
+    public ResponseDto signUpResult(SignUpRequest signUpRequest,String token) {
+
         String email = signUpRequest.getEmail();
         String nickname = signUpRequest.getNickname();
         if (userRepository.existsByEmail(email)){
@@ -87,8 +97,23 @@ public class AuthService {
         Role role = roleRepository.findById(1)
                 .orElseThrow(()->new NotFoundException("USER 역할이 존재하지 않습니다."));
         UserRole userRole = UserRole.of(role,user);
-        userRepository.save(user);
+        User saveUser = userRepository.save(user);
         userRoleRepository.save(userRole);
+        if (token !=null){
+            String tokenEmail = jwtTokenProvider.getEmail(token);
+            Long tokenTeamId = jwtTokenProvider.getTeamId(token);
+            if (redisUtil.getData(tokenEmail) == null || !tokenEmail.equals(signUpRequest.getEmail())) {
+                throw new NotFoundException("초대 토큰이 유효하지 않거나 초대 받은 이메일과 가입하려는 이메일이 동일하지 않습니다..");
+            }
+            redisUtil.deleteData(tokenEmail);
+            Team joinTeam = teamRepository.findById(tokenTeamId).orElseThrow(()->new NotFoundException("가입하려는 팀이 존재하지 않습니다."));
+            List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
+            if (teamUsers.size() >= 10){
+                throw new NotFoundException("가입하려는 팀은 이미 10명이라 참여 불가능합니다.");
+            }
+            TeamUser teamUser = TeamUser.of(joinTeam,saveUser, TeamRole.MEMBER);
+            teamUserRepository.save(teamUser);
+        }
         return new ResponseDto(HttpStatus.CREATED.value(),user.getNickname()+"님 Ai-Co 회원가입이 완료되었습니다.");
     }
 

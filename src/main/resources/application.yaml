@@ -30,7 +30,7 @@ spring:
           auth: true
   data:
     redis:
-      host: ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7) # 추후 ec2 프라이빗 아이피로 변경 필요2.
+      host: ENC(n60mvykJRU2R5SBqLmUiyatj973/jexg) #ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7) # 추후 ec2 프라이빗 아이피로 변경 필요2.
       port: 6379
       password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
 
@@ -45,8 +45,8 @@ jasypt:
 cloud:
   aws:
     credentials:
-      access-key: ${ACCESS_KEY}
-      secret-key: ${SECRET_KEY}
+      access-key: ENC(StjTgKvyFk/Nidrg+8RTa45y9Vi21Eb8F14uz8o+zxY=)
+      secret-key: ENC(8xy66S8/lLySwyyvgkqmUeQIKdy5MHfgU00VE2Mt9Jz8YTsmKCd6fJZMRihXqWfi+g5C5o+sPs0=)
     region:
       static: ap-northeast-2  # 서울 리전
     s3:

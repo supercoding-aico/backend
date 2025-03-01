@@ -38,8 +38,8 @@ public class AuthController {
 
     }
     @PostMapping("/sign-up")
-    public ResponseDto signUp(@RequestBody SignUpRequest signUpRequest){
-        return authService.signUpResult(signUpRequest);
+    public ResponseDto signUp(@RequestParam(required = false,value = "token")String token,@RequestBody SignUpRequest signUpRequest){
+        return authService.signUpResult(signUpRequest,token);
     }
     @PostMapping("/login")
     public ResponseDto login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){

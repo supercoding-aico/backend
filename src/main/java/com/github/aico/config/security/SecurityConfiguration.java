@@ -55,8 +55,9 @@ public class SecurityConfiguration {
         corsConfiguration.addAllowedOrigin("https://www.ai-co.store");
         corsConfiguration.addAllowedOrigin("http://www.ai-co.store:8080");
         corsConfiguration.addAllowedOrigin("https://jiangxy.github.io");
+        corsConfiguration.addAllowedOrigin("https://ai-co.usze.xyz");
         corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.addExposedHeader("Authorization"); //추가
+        corsConfiguration.addExposedHeader("Authorization");
         corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Authorization-refresh", "token"));
         corsConfiguration.setAllowedMethods(List.of("GET","PUT","POST","DELETE","OPTIONS"));
         corsConfiguration.setMaxAge(1000L*60*60);

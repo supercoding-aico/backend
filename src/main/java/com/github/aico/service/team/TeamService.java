@@ -1,5 +1,6 @@
 package com.github.aico.service.team;
 
+import com.github.aico.config.security.JwtTokenProvider;
 import com.github.aico.repository.team.Team;
 import com.github.aico.repository.team.TeamRepository;
 import com.github.aico.repository.team_user.TeamRole;
@@ -7,23 +8,30 @@ import com.github.aico.repository.team_user.TeamUser;
 import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
 import com.github.aico.repository.user.UserRepository;
+import com.github.aico.service.redis.RedisUtil;
 import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.service.exceptions.NotFoundException;
+import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.team.response.TeamsResponse;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
 import com.github.aico.web.dto.teamUser.response.TeamMember;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Not;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -33,6 +41,11 @@ public class TeamService {
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JavaMailSender sender;
+    @Value("${spring.mail.username}")
+    private String senderEmail;
+    private final RedisUtil redisUtil;
     /**
      * 내 팀 리스트 조회
      * */
@@ -54,7 +67,7 @@ public class TeamService {
     public ResponseDto makeTeamResult(MakeTeam makeTeam, User user) {
         Team team = Team.from(makeTeam);
         Team successTeam = teamRepository.save(team);
-        TeamUser teamUser = TeamUser.of(successTeam,user);
+        TeamUser teamUser = TeamUser.of(successTeam,user,TeamRole.MANAGER);
         teamUserRepository.save(teamUser);
 
         return new ResponseDto(HttpStatus.CREATED.value(),successTeam.getTeamName() + "팀이 성공적으로 만들어졌습니다.");
@@ -135,27 +148,31 @@ public class TeamService {
         }
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
-    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
-        if (teamManagers.size() == 1) {
-            // 매니저가 1명일 때
-            // 본인은 탈퇴 불가
-            if (leaveUserId.equals(user.getUserId())) {
-                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
-            } else { //다른 유저는 탈퇴 가능
-                teamUserRepository.delete(teamUser);
-            } //1명 아닐 때는 본인도 탈퇴 가능
-        } else {
-            teamUserRepository.delete(teamUser);
-        }
-    }
 
+    @Transactional
+    public ResponseDto memberInviteResult(Long teamId, User user, EmailDuplicate inviteEmail) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀이 존재하지 않습니다."));
+        //공통 메소드로 빼기
+        if (!teamUserRepository.existsByTeamAndUser(team,user)){
+            throw new NotFoundException(teamId + "에 해당하는 팀원이 아닙니다.");
+        }
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(team);
+        if (teamUsers.size() >=10 ){
+            throw new BadRequestException("현재 팀원 의 수 : " + teamUsers.size() + "명이므로 더 이상 초대가 불가능합니다.(팀원 최대 10명)");
+        }
+        String inviteToken = jwtTokenProvider.createInvitationToken(inviteEmail.getEmail(),team.getTeamId());
+        MimeMessage sendMessage = createMessage(inviteEmail.getEmail(),team,inviteToken);
+        sender.send(sendMessage);
+        redisUtil.setDataExpire(inviteEmail.getEmail(),inviteToken,60*5L);
+        return new ResponseDto(HttpStatus.OK.value(),inviteEmail.getEmail()+ "에 초대 링크 발송되었습니다.","token : " + inviteToken);
+    }
     @Transactional
     public void joinTeamResult(Long teamId, String inviteToken, HttpServletResponse response) {
         String tokenEmail = jwtTokenProvider.getEmail(inviteToken);
         Long tokenTeamId = jwtTokenProvider.getTeamId(inviteToken);
         log.info("tokenEmail : " + tokenEmail);
         log.info("tokenTeamId : " + tokenTeamId);
-
         try {
             //팀이 유효하지 않을 때
             //이미 팀에 가입된 유저일 때
@@ -165,13 +182,6 @@ public class TeamService {
             getResponse(teamId, tokenEmail, response,inviteToken);
         }catch (IOException ioe){
             throw new NotFoundException("잘못된 페이지 요청입니다.");
-
-    private void handleMemberLeave(User user, Long leaveUserId, TeamUser teamUser) {
-        if (leaveUserId.equals(user.getUserId())) {
-            teamUserRepository.delete(teamUser);
-        } else {
-            throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
-
         }
     }
 //    @Transactional
@@ -230,7 +240,6 @@ public class TeamService {
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님은 " + team.getTeamId()+"에 가입되어 있지 않습니다."));
         return teamUser.getTeamRole();
     }
-
     /**
      * 매니저가 탈퇴할 때
      * */
@@ -265,7 +274,7 @@ public class TeamService {
         MimeMessage mimeMessage = sender.createMimeMessage();
 
 
-        String backendUrl = "http://localhost:8080/api/team/join/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
+        String backendUrl = "https://www.ai-co.store/api/team/join/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
         try {
             mimeMessage.setFrom(senderEmail);
             mimeMessage.setRecipients(MimeMessage.RecipientType.TO,inviteEmail);
@@ -286,10 +295,10 @@ public class TeamService {
             String emailBody = body.toString();
             mimeMessage.setText(emailBody,"UTF-8", "html");
         }catch (MessagingException messageE){
-             messageE.printStackTrace();
+            messageE.printStackTrace();
         }catch (Exception e){
             e.printStackTrace();
-            }
+        }
         return mimeMessage;
     }
     /**
@@ -342,7 +351,6 @@ public class TeamService {
             return;
         }
     }
-
 
 
 
