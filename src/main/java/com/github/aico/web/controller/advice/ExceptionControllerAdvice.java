@@ -19,7 +19,6 @@ public class ExceptionControllerAdvice {
         log.error("클라이언트 요청 이후 DB검색 중 발생한 에러입니다. " + nfe.getMessage());
         return new ResponseDto(HttpStatus.NOT_FOUND.value(),nfe.getMessage());
     }
-
     @ExceptionHandler(TokenValidateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto handleTokenValidateException(TokenValidateException tve){

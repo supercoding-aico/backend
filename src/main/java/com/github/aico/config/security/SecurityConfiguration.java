@@ -23,8 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -37,14 +35,12 @@ public class SecurityConfiguration {
                 .sessionManagement(sm->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(c-> c.configurationSource(corsConfig()))
                 .authorizeHttpRequests((requests) -> requests
-//                        .requestMatchers("/api/auth/**","/api/team/join/**").permitAll()
-                        .anyRequest().permitAll() // 나머지 요청은 인증이 필요
+                        .anyRequest().permitAll()  // 모든 요청에 대해 인증 없이 접근 허용
                 )
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())
                         .accessDeniedHandler(new CustomerAccessDeniedHandler()))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
     private CorsConfigurationSource corsConfig() {

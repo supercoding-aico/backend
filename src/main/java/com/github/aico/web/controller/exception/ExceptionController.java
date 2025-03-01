@@ -1,7 +1,6 @@
 package com.github.aico.web.controller.exception;
 
 import com.github.aico.service.exceptions.CAuthenticationEntryPointException;
-import com.github.aico.service.exceptions.TokenValidateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +20,5 @@ public class ExceptionController {
     @GetMapping(value = "/access-denied")
     public void accessdeniedException() {
         throw new AccessDeniedException("");
-    }
-    @GetMapping(value = "/token-valid")
-    public void tokenValidateException() {
-        throw new TokenValidateException("");
     }
 }

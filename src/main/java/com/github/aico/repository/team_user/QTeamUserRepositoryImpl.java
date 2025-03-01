@@ -36,14 +36,4 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)  // 락 설정
                 .fetch();  // 결과 리스트 반환
     }
-
-    @Override
-    public List<TeamUser> findByTeamWithLockDsl(Team team) {
-        QTeamUser teamUser = QTeamUser.teamUser;
-
-        return jpaQueryFactory.selectFrom(teamUser)
-                .where(teamUser.team.eq(team))
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .fetch();
-    }
 }

@@ -12,7 +12,6 @@ import com.github.aico.web.dto.auth.request.NicknameDuplicate;
 import com.github.aico.web.dto.auth.request.SignUpRequest;
 import com.github.aico.web.dto.auth.resposne.UserInfo;
 import com.github.aico.web.dto.base.ResponseDto;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,17 +44,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseDto login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         String  token = authService.loginResult(loginRequest);
-
         if (token != null && !token.isEmpty()) {
-//            response.setHeader("Authorization", "Bearer " + token);
-            Cookie cookie = new Cookie("access_token", token);  // "token"은 쿠키의 이름
-            cookie.setHttpOnly(true);  // HttpOnly 속성 설정
-            cookie.setSecure(true);  // HTTPS 연결일 때만 쿠키를 보냄 (선택적, 보안을 강화하려면 설정)
-            cookie.setPath("/");  // 쿠키가 유효한 경로를 지정 (전체 경로에서 유효하게 설정)
-            cookie.setMaxAge(60 * 60 * 24);  // 쿠키의 유효 기간 설정 (여기서는 1일)
-
-            // 응답에 쿠키 추가
-            response.addCookie(cookie);
+            response.setHeader("Authorization", "Bearer " + token);
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
         } else {
             return new ResponseDto(HttpStatus.UNAUTHORIZED.value(), "아이디 또는 비밀번호를 다시 확인해주세요");
@@ -70,9 +60,5 @@ public class AuthController {
         log.info(user.getEmail());
         User user1 = userRepository.findByEmailWithRoles(user.getEmail()).orElseThrow(()-> new NotFoundException("유저 찾기 불가"));
         return UserInfo.from(user1);
-    }
-    @PostMapping("/token/refresh")
-    public ResponseDto refreshToken(@CookieValue(value = "access_token") String accessToken,HttpServletResponse response){
-        return authService.refreshToken(accessToken,response);
     }
 }
