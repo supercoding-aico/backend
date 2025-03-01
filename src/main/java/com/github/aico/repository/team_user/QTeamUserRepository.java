@@ -7,4 +7,5 @@ import java.util.List;
 public interface QTeamUserRepository {
     List<TeamUser> findTeamUsersByTeamFetchUser(Team team);
     List<TeamUser> findByTeamAndRoleWithLockDsl(Team team, TeamRole role);
+    List<TeamUser> findByTeamWithLockDsl(Team team);
 }
