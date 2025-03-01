@@ -15,6 +15,7 @@ spring:
   logging:
     level:
       io.netty.resolver.dns: DEBUG
+
   mail:
     # Google smtp server 사용
     host: smtp.gmail.com
@@ -33,9 +34,20 @@ spring:
       port: 6379
       password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
 
+
 jwt:
   secret-key-source: ENC(TH3JEhaFp/YER6btYCYQ99ZH9nDc/zuXPIVNM/JnshmEAOsccENF1WNlkkII/0xt)
 jasypt:
   encryptor:
     password: ${JASYPT_SECRET_KEY}
     bean: jasyptStringEncryptor
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+    region:
+      static: ap-northeast-2  # 서울 리전
+    s3:
+      bucket: aicoproject

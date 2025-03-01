@@ -52,6 +52,7 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256,secretKey)
                 .compact();
     }
+
     public String createRefreshToken(String email){
         Claims claims = Jwts.claims()
                 .setSubject(email);
@@ -80,6 +81,7 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
+
 
 //    public String resolveToken(HttpServletRequest request) {
 //        String token = request.getHeader("Authorization");
@@ -128,14 +130,5 @@ public String resolveToken(HttpServletRequest request) {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
-    }
-    public Long getTeamId(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
-
-        // teamId를 claims에서 추출
-        return claims.get("teamId", Long.class);
     }
 }

@@ -3,11 +3,9 @@ package com.github.aico.web.controller.team;
 import com.github.aico.repository.user.JwtUser;
 import com.github.aico.repository.user.User;
 import com.github.aico.service.team.TeamService;
-import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +43,7 @@ public class TeamController {
         return teamService.leaveTeamResult(user,teamId,leaveTeamMember);
     }
 
+
     @PostMapping("/{teamId}/invite")
     public ResponseDto memberInvite(@PathVariable Long teamId,@JwtUser User user, @RequestBody EmailDuplicate inviteEmail){
         return teamService.memberInviteResult(teamId,user,inviteEmail);
@@ -55,4 +54,5 @@ public class TeamController {
         teamService.joinTeamResult(teamId,inviteToken,response);
 
     }
+
 }
