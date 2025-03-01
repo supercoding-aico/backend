@@ -18,10 +18,8 @@ import org.springframework.stereotype.Controller;
 public class ChattingController {
 
     private final ChattingService chattingService;
-    @MessageMapping("/team-chat")
-    public void sendChatting(@Payload Chatting chatting
-//                                   @JwtUser User user
-    ) {
+    @MessageMapping("/room")
+    public void sendChatting(@Payload Chatting chatting) {
         chattingService.sendChatting(chatting);
 
     }

@@ -39,6 +39,6 @@ public class ChattingService {
         chatRepository.save(chat);
 
 
-        messagingTemplate.convertAndSend("/topic/chat/" + team.getTeamId(), chatting);
+        messagingTemplate.convertAndSend("/topic/room/" + team.getTeamId(), chatting);
     }
 }

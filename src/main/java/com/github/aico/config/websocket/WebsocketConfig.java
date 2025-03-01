@@ -1,5 +1,6 @@
 package com.github.aico.config.websocket;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -7,10 +8,12 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
+//    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic/chat","topic/notification");
+        config.enableSimpleBroker("/topic/room","topic/notification");
         config.setApplicationDestinationPrefixes("/app");
 
     }
@@ -19,6 +22,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/aiCoWebsocket")
                 .setAllowedOrigins("*");
+//                .addInterceptors(jwtHandshakeInterceptor);
 
     }
 }
