@@ -22,3 +22,13 @@ jasypt:
   encryptor:
     password: ${JASYPT_SECRET_KEY}
     bean: jasyptStringEncryptor
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+    region:
+      static: ap-northeast-2  # 서울 리전
+    s3:
+      bucket: aicoproject
