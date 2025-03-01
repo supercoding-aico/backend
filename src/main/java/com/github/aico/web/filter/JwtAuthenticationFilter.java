@@ -39,7 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 new NegatedRequestMatcher(new MvcRequestMatcher(introspector, "/api/auth/login-valid")) // 제외할 URL
         );
         if (permitAllMatcher.matches(request)) {
-
             filterChain.doFilter(request, response);
             return;
         }

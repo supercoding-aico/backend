@@ -31,7 +31,6 @@ public class AuthController {
     @PostMapping("/nickname")
     public ResponseDto nickNameDuplicateCheck(@RequestBody NicknameDuplicate nicknameDuplicate){
         return authService.getNickNameDuplicateCheckResult(nicknameDuplicate);
-
     }
     @PostMapping("/email")
     public ResponseDto emailDuplicateCheck(@RequestBody EmailDuplicate emailDuplicate){
@@ -64,9 +63,10 @@ public class AuthController {
         return authService.loginValidRequest(user);
     }
     @GetMapping("/test")
-    public UserInfo test(@JwtUser User user){
-        log.info(user.getEmail());
-        User user1 = userRepository.findByEmailWithRoles(user.getEmail()).orElseThrow(()-> new NotFoundException("유저 찾기 불가"));
+    public UserInfo test(@AuthenticationPrincipal CustomUserDetails customUserDetails){
+
+
+        User user1 = userRepository.findByEmailWithRoles(customUserDetails.getUsername()).orElseThrow(()-> new NotFoundException("유저 찾기 불가"));
         return UserInfo.from(user1);
     }
     @PostMapping("/token/refresh")

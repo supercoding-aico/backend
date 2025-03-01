@@ -35,7 +35,6 @@ public class JwtUserArgumentResolver implements HandlerMethodArgumentResolver {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-
         if (authentication == null || !(authentication instanceof UsernamePasswordAuthenticationToken)) {
             throw new NotFoundException("인증 정보가 없습니다.");
         }
