@@ -43,4 +43,16 @@ public class TeamController {
         return teamService.leaveTeamResult(user,teamId,leaveTeamMember);
     }
 
+
+    @PostMapping("/{teamId}/invite")
+    public ResponseDto memberInvite(@PathVariable Long teamId,@JwtUser User user, @RequestBody EmailDuplicate inviteEmail){
+        return teamService.memberInviteResult(teamId,user,inviteEmail);
+
+    }
+    @GetMapping("/join/{teamId}")
+    public void joinTeam(@PathVariable Long teamId, @RequestParam("token")String inviteToken, HttpServletResponse response){
+        teamService.joinTeamResult(teamId,inviteToken,response);
+
+    }
+
 }

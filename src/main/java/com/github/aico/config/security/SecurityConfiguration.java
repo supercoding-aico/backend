@@ -23,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -40,7 +41,7 @@ public class SecurityConfiguration {
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())
                         .accessDeniedHandler(new CustomerAccessDeniedHandler()))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
     private CorsConfigurationSource corsConfig() {

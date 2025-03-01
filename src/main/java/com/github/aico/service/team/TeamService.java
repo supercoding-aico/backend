@@ -148,11 +148,30 @@ public class TeamService {
             teamUserRepository.delete(teamUser);
         }
     }
+
+    @Transactional
+    public void joinTeamResult(Long teamId, String inviteToken, HttpServletResponse response) {
+        String tokenEmail = jwtTokenProvider.getEmail(inviteToken);
+        Long tokenTeamId = jwtTokenProvider.getTeamId(inviteToken);
+        log.info("tokenEmail : " + tokenEmail);
+        log.info("tokenTeamId : " + tokenTeamId);
+
+        try {
+            //팀이 유효하지 않을 때
+            //이미 팀에 가입된 유저일 때
+            //토큰이 유효하지 않을 때
+            //회원가입은 되어 있고 팀 가입이 필요할 때
+            //회원가입도 안되어 있을 때
+            getResponse(teamId, tokenEmail, response,inviteToken);
+        }catch (IOException ioe){
+            throw new NotFoundException("잘못된 페이지 요청입니다.");
+
     private void handleMemberLeave(User user, Long leaveUserId, TeamUser teamUser) {
         if (leaveUserId.equals(user.getUserId())) {
             teamUserRepository.delete(teamUser);
         } else {
             throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
+
         }
     }
 //    @Transactional
@@ -211,6 +230,119 @@ public class TeamService {
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님은 " + team.getTeamId()+"에 가입되어 있지 않습니다."));
         return teamUser.getTeamRole();
     }
+
+    /**
+     * 매니저가 탈퇴할 때
+     * */
+    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
+        if (teamManagers.size() == 1) {
+            // 매니저가 1명일 때
+            // 본인은 탈퇴 불가
+            if (leaveUserId.equals(user.getUserId())) {
+                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
+            } else { //다른 유저는 탈퇴 가능
+                teamUserRepository.delete(teamUser);
+            } //1명 아닐 때는 본인도 탈퇴 가능
+        } else {
+            teamUserRepository.delete(teamUser);
+        }
+    }
+    /**
+     * 일반 멤버가 탈퇴할 때
+     * */
+    private void handleMemberLeave(User user, Long leaveUserId, TeamUser teamUser) {
+        if (leaveUserId.equals(user.getUserId())) {
+            teamUserRepository.delete(teamUser);
+        } else {
+            throw new BadRequestException("해당 유저의 역할은 " + teamUser.getTeamRole() + "이므로 다른 팀원은 탈퇴처리가 불가능합니다.");
+        }
+    }
+    /**
+     * 메일에 보낼 메시지 만들기
+     * */
+    public MimeMessage createMessage(String inviteEmail,Team team,String inviteToken){
+
+        MimeMessage mimeMessage = sender.createMimeMessage();
+
+
+        String backendUrl = "http://localhost:8080/api/team/join/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
+        try {
+            mimeMessage.setFrom(senderEmail);
+            mimeMessage.setRecipients(MimeMessage.RecipientType.TO,inviteEmail);
+            mimeMessage.setSubject("Ai-Co 프로젝트 팀명 : " + team.getTeamName() + "초대 링크입니다." );
+
+
+            StringBuilder body = new StringBuilder();
+            body.append("<h1>팀 초대</h1>")
+                    .append("<h3>팀에 초대되었습니다! 아래 버튼을 눌러 가입하세요.</h3><br>")
+                    .append("<table cellspacing='0' cellpadding='0' border='0' style='margin: 10px 0;'>")
+                    .append("<tr><td align='center' bgcolor='#007BFF' style='border-radius: 5px;'>")
+                    .append("<a href='").append(backendUrl)
+                    .append("' style='display: inline-block; font-size: 16px; color: white; background-color: #007BFF; text-decoration: none; padding: 10px 20px; border-radius: 5px;'>")
+                    .append("Join Team</a>")
+                    .append("</td></tr>")
+                    .append("</table>");
+
+            String emailBody = body.toString();
+            mimeMessage.setText(emailBody,"UTF-8", "html");
+        }catch (MessagingException messageE){
+             messageE.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+            }
+        return mimeMessage;
+    }
+    /**
+     * 초대 토큰 생성
+     * */
+    public String createInviteToken(String inviteEmail,Long teamId){
+        return jwtTokenProvider.createInvitationToken(inviteEmail,teamId);
+    }
+
+    private void getResponse(Long teamId, String tokenEmail, HttpServletResponse response,String inviteToken) throws IOException {
+        // 팀이 유효하지 않을 때
+        Team joinTeam = teamRepository.findById(teamId).orElse(null);
+        if (joinTeam == null) {
+            response.sendRedirect("http://localhost:3000?code=404");    // http://localhost:3000?code=404
+            return;
+        }
+
+
+        User user = userRepository.findByEmailWithRoles(tokenEmail).orElse(null);
+
+        //이미 팀에 가입되어 있을 때
+        if (teamUserRepository.existsByTeamAndUser(joinTeam, user)) {
+            response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
+            return;
+        }
+
+        // 토큰이 유효하지 않을 때
+        if (redisUtil.getData(tokenEmail) == null) {
+            response.sendRedirect("http://localhost:3000?code=401");// http://localhost:3000?code=401
+            return;
+        }
+
+        // 회원가입은 되어 있고 팀이 아닐 때
+        TeamUser teamUser = teamUserRepository.findByTeamAndUser(joinTeam, user).orElse(null);
+        if (teamUser == null) {
+            List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
+            if (teamUsers.size() >= 10){
+                response.sendRedirect("http://localhost:3000?code=400"); // http://localhost:3000?code=400
+                return;
+            }
+            TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
+            teamUserRepository.save(joinTeamUser);
+            redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
+            response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
+            return;
+        }
+        // 회원가입이 되어 있지 않을 때
+        if (user == null) {
+            response.sendRedirect("http://localhost:3000/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
+            return;
+        }
+    }
+
 
 
 

@@ -16,6 +16,25 @@ spring:
     level:
       io.netty.resolver.dns: DEBUG
 
+  mail:
+    # Google smtp server 사용
+    host: smtp.gmail.com
+    port: 587
+    username: ENC(n15HgIvBgd1Wcdu4NbyeAmi40GkKZcxrZoH7HX2nyrI=)
+    password: ENC(DcdivENQDEeS7tVQ3NBzgdPiL7DA9LQTNNLcL7p08DM=)
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+          auth: true
+  data:
+    redis:
+      host: ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7) # 추후 ec2 프라이빗 아이피로 변경 필요2.
+      port: 6379
+      password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
+
+
 jwt:
   secret-key-source: ENC(TH3JEhaFp/YER6btYCYQ99ZH9nDc/zuXPIVNM/JnshmEAOsccENF1WNlkkII/0xt)
 jasypt:

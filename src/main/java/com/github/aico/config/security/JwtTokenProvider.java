@@ -3,9 +3,11 @@ package com.github.aico.config.security;
 import com.github.aico.repository.userDetails.CustomUserDetails;
 import com.github.aico.service.exceptions.TokenValidateException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,9 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder()
                 .encodeToString(secretKeySource.getBytes());
     }
-    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+//    private final long tokenValidMilisecond = 2000L * 60 * 60; // 2시간
+    private final long tokenValidMilisecond = 1000L * 60; // 1분
+    private  final long refreshTokenValidMilisecond = 1000L * 60L * 60L * 24L * 7L;
 
     private final UserDetailsService userDetailsService;
     public String createToken(String email, List<String> roles){
@@ -49,13 +53,54 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String resolveToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            return token.substring(7); // "Bearer " 접두사 제거
-        }
-        return null;
+    public String createRefreshToken(String email){
+        Claims claims = Jwts.claims()
+                .setSubject(email);
+
+        Date now = new Date();
+        // 리프레시 토큰의 만료 시간을 7일로 설정
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshTokenValidMilisecond))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
     }
+    public String createInvitationToken(String email, Long teamId) {
+        Claims claims = Jwts.claims().setSubject(email);
+        claims.put("invitation", true);  // 초대 토큰임을 명시
+        claims.put("teamId", teamId);    // 초대받은 팀 ID
+
+        Date now = new Date();
+        long invitationTokenValidity = 24 * 60 * 60 * 1000L; // 24시간
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + invitationTokenValidity))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
+
+//    public String resolveToken(HttpServletRequest request) {
+//        String token = request.getHeader("Authorization");
+//        if (token != null && token.startsWith("Bearer ")) {
+//            return token.substring(7); // "Bearer " 접두사 제거
+//        }
+//        return null;
+//    }
+public String resolveToken(HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+        for (Cookie cookie : cookies) {
+            if ("access_token".equals(cookie.getName())) {
+                return cookie.getValue();  // 쿠키에서 토큰 값 추출
+            }
+        }
+    }
+    return null;
+}
 
 
     public boolean validateToken(String token) {
@@ -66,11 +111,8 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
             Date now = new Date();
-            if (claims.getExpiration().before(now)){
-                throw new TokenValidateException("해당 토큰 유효 기간이 지났습니다.");
-            }
             return claims.getExpiration().after(now);
-        }catch (TokenValidateException tve){
+        }catch (ExpiredJwtException eje){
             throw new TokenValidateException("토큰이 유효하지 않습니다.");
         }
 

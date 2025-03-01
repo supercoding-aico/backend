@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "refresh_token")
 public class RefreshToken extends BaseEntity {
+
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "refresh_token_id")
     private Long refreshTokenId;
