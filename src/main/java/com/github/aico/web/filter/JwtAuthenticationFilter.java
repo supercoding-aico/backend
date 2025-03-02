@@ -33,8 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         RequestMatcher permitAllMatcher = new AndRequestMatcher(
                 new OrRequestMatcher( // 먼저 허용할 URL들 정의
-                        new MvcRequestMatcher(introspector, "/api/auth/**"),
-                        new MvcRequestMatcher(introspector, "/api/team/join/**")
+                        new MvcRequestMatcher(introspector, "/api/auth/**")
+//                        new MvcRequestMatcher(introspector, "/api/team/join/**")
                 ),
                 new NegatedRequestMatcher(new MvcRequestMatcher(introspector, "/api/auth/login-valid")) // 제외할 URL
         );
