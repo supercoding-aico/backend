@@ -29,6 +29,8 @@ public class User extends BaseEntity {
     private String password;
     @Column(name = "phone_number", length = 11, nullable = true)
     private String phoneNumber;
+    @Column(name = "profile", length = 255, nullable = true)
+    private String profile;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserRole> userRoles;
 
@@ -37,6 +39,7 @@ public class User extends BaseEntity {
                 .nickname(signUpRequest.getNickname())
                 .email(signUpRequest.getEmail())
                 .phoneNumber(signUpRequest.getPhoneNumber())
+                .profile("")
                 .build();
     }
     public void updatePassword(String password){

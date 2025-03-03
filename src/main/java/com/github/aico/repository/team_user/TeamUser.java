@@ -27,11 +27,11 @@ public class TeamUser {
     @Column(name = "team_role",nullable = false)
     private TeamRole teamRole;
 
-    public static TeamUser of(Team team, User user){
+    public static TeamUser of(Team team, User user,TeamRole teamRole){
         return TeamUser.builder()
                 .team(team)
                 .user(user)
-                .teamRole(TeamRole.MANAGER)
+                .teamRole(teamRole)
                 .build();
     }
 }
