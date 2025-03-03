@@ -58,6 +58,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     //websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    //redis에 Jackson사용
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+
 }
 
 tasks.named('test') {

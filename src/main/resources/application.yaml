@@ -12,6 +12,14 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: none
+
+    properties:
+      hibernate.jdbc.batch_size: 50  # 한 번에 저장할 최대 엔티티 수
+      hibernate.order_inserts: true  # 삽입 순서 최적화
+      hibernate.order_updates: true  # 업데이트 순서 최적화
+      hibernate.flush.mode: COMMIT  # Batch 후 flush 시점 설정
+
+
   logging:
     level:
       io.netty.resolver.dns: DEBUG
@@ -30,9 +38,10 @@ spring:
           auth: true
   data:
     redis:
-      host: ENC(n60mvykJRU2R5SBqLmUiyatj973/jexg) #ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7) # 추후 ec2 프라이빗 아이피로 변경 필요2.
+      host: localhost
+      #host: ENC(n60mvykJRU2R5SBqLmUiyatj973/jexg) #ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7) # 추후 ec2 프라이빗 아이피로 변경 필요2.
       port: 6379
-      password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
+      #password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
 
 
 jwt:

@@ -27,7 +27,7 @@ public class ChatResponse {
                 .chatId(chat.getChatId())
                 .userInfo(UserInfo.from(chat.getTeamUser().getUser()))
                 .content(chat.getContent())
-                .createdAt(chat.getCreatedAt())
+                .createdAt(chat.getCreatedAtMillis())
                 .build();
     }
 }
