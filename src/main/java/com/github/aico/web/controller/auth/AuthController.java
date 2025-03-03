@@ -51,6 +51,7 @@ public class AuthController {
 //            cookie.setSecure(true);
             cookie.setPath("/");
             cookie.setMaxAge(60 * 60 * 24);
+            cookie.setAttribute("SameSite","None");
 
             response.addCookie(cookie);
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
