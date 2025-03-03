@@ -169,7 +169,7 @@ public class AuthService {
     private void deleteCookie(HttpServletResponse response){
         Cookie oldCookie = new Cookie("access_token", null);
         oldCookie.setHttpOnly(true);
-        oldCookie.setSecure(true);
+//        oldCookie.setSecure(true);
         oldCookie.setPath("/");
         oldCookie.setMaxAge(0);
         response.addCookie(oldCookie);
@@ -177,7 +177,7 @@ public class AuthService {
     private void createCookie(String newAccessToken,HttpServletResponse response){
         Cookie newCookie = new Cookie("access_token", newAccessToken);
         newCookie.setHttpOnly(true);
-        newCookie.setSecure(true);
+//        newCookie.setSecure(true);
         newCookie.setPath("/");
         newCookie.setMaxAge(60 * 60 * 24);
         response.addCookie(newCookie);

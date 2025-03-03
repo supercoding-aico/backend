@@ -48,7 +48,7 @@ public class AuthController {
 //            response.setHeader("Authorization", "Bearer " + token);
             Cookie cookie = new Cookie("access_token", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
+//            cookie.setSecure(true);
             cookie.setPath("/");
             cookie.setMaxAge(60 * 60 * 24);
 
