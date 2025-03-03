@@ -13,6 +13,7 @@ import com.github.aico.service.redis.RedisUtil;
 import com.github.aico.web.dto.base.ResponseDto;
 import com.github.aico.web.dto.chat.request.Chatting;
 import com.github.aico.web.dto.chat.response.ChatResponse;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ public class ChatService {
     private final TeamRepository teamRepository;
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
     @Transactional
     public ResponseDto getTeamChatListResult(User user , Long teamId, Integer page) {
         List<Chatting> chattings = redisUtil.getMessageListFromRedis(teamId);
@@ -43,14 +45,15 @@ public class ChatService {
             redisUtil.removeChattingFromRedis(teamId);
             List<Chat> historyChats = chattings.stream()
                     .map(chat -> {
-                        User findUser = userRepository.findById(user.getUserId())
+                        User findUser = userRepository.findById(chat.getUserId())
                                 .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
                         TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
                                 .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
                         return Chat.of(chat, teamUser);
                     })
                     .toList();
-            chatRepository.saveAll(historyChats);
+            chatRepository.saveAllBatch(historyChats);
+
         }
 
 
@@ -60,7 +63,7 @@ public class ChatService {
         }
         Pageable pageable = PageRequest.of(page,10,Sort.by( Sort.Direction.DESC,"createdAt"));
         List<TeamUser> teamUsers = teamUserRepository.findTeamUsersByTeamFetchUser(team);
-        Page<Chat> chats = chatRepository.findByTeamUserInOrderByCreatedAtDesc(teamUsers,pageable);
+        Page<Chat> chats = chatRepository.findByTeamUserInOrderByCreatedAtMillisDesc(teamUsers,pageable);
         Page<ChatResponse> chatResponses = chats.map(ChatResponse::from);
         return new ResponseDto(HttpStatus.OK.value(),team.getTeamName() + "에 대한 채팅 리스트 조회",chatResponses);
     }
