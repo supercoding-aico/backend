@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,15 +46,24 @@ public class AuthController {
     public ResponseDto login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         String  token = authService.loginResult(loginRequest);
         if (token != null && !token.isEmpty()) {
-//            response.setHeader("Authorization", "Bearer " + token);
-            Cookie cookie = new Cookie("access_token", token);
-            cookie.setHttpOnly(true);
-//            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60 * 24);
-            cookie.setAttribute("SameSite","None");
+////            response.setHeader("Authorization", "Bearer " + token);
+//            Cookie cookie = new Cookie("access_token", token);
+//            cookie.setHttpOnly(true);
+////            cookie.setSecure(true);
+//            cookie.setPath("/");
+//            cookie.setMaxAge(60 * 60 * 24);
+//            cookie.setAttribute("SameSite","None");
+//
+//            response.addCookie(cookie);
+            ResponseCookie cookie = ResponseCookie.from("access_token", token)
+                    .httpOnly(true)
+//                    .secure(true) // https 환경에서 true로 설정
+                    .path("/")
+                    .maxAge(60 * 60 * 24)
+                    .sameSite("None") // SameSite 설정
+                    .build();
 
-            response.addCookie(cookie);
+            response.addHeader("Set-Cookie", cookie.toString());
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
         } else {
             return new ResponseDto(HttpStatus.UNAUTHORIZED.value(), "아이디 또는 비밀번호를 다시 확인해주세요");
