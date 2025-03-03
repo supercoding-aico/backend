@@ -31,4 +31,10 @@ public class UserController {
     public ResponseDto deleteProfile(@JwtUser User user) {
         return userService.deleteProfile(user);
     }
+
+    @PutMapping("/image")
+    public ResponseDto updateProfileImage(@JwtUser User user, @RequestParam("profileImage") MultipartFile profileImage) {
+        return userService.updateProfileImage(user, profileImage);
+    }
+
 }
