@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ChatRepository extends JpaRepository<Chat,Long> {
+public interface ChatRepository extends JpaRepository<Chat,Long>,CustomChatRepository {
 
-    Page<Chat> findByTeamUserInOrderByCreatedAtDesc(List<TeamUser> teamUsers, Pageable pageable);
+    Page<Chat> findByTeamUserInOrderByCreatedAtMillisDesc(List<TeamUser> teamUsers, Pageable pageable);
 }
