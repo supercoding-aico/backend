@@ -34,7 +34,7 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserRole> userRoles;
 
-    public static User from(SignUpRequest signUpRequest){
+    public static User from(SignUpRequest signUpRequest) {
         return User.builder()
                 .nickname(signUpRequest.getNickname())
                 .email(signUpRequest.getEmail())
@@ -42,6 +42,7 @@ public class User extends BaseEntity {
                 .profile("")
                 .build();
     }
+
     public void updatePassword(String password){
         if (password == null || password.equals("")) {
             throw new BadRequestException("비밀번호를 입력해주세요");
@@ -54,5 +55,6 @@ public class User extends BaseEntity {
             this.nickname = request.getNickname();
         }
     }
+
 
 }
