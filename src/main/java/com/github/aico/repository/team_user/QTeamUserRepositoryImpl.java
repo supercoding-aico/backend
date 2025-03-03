@@ -27,6 +27,15 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
                 .fetch();
     }
     @Override
+    public List<TeamUser> findByTeamWithLockDsl(Team team) {
+        QTeamUser teamUser = QTeamUser.teamUser;
+
+        return jpaQueryFactory.selectFrom(teamUser)
+                .where(teamUser.team.eq(team))
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetch();
+    }
+    @Override
     public List<TeamUser> findByTeamAndRoleWithLockDsl(Team team, TeamRole role) {
         QTeamUser teamUser = QTeamUser.teamUser;
 

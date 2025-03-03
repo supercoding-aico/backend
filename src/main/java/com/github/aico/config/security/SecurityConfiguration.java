@@ -23,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -40,7 +41,7 @@ public class SecurityConfiguration {
                 .exceptionHandling((exception) -> exception
                         .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())
                         .accessDeniedHandler(new CustomerAccessDeniedHandler()))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
     private CorsConfigurationSource corsConfig() {
@@ -54,8 +55,9 @@ public class SecurityConfiguration {
         corsConfiguration.addAllowedOrigin("https://www.ai-co.store");
         corsConfiguration.addAllowedOrigin("http://www.ai-co.store:8080");
         corsConfiguration.addAllowedOrigin("https://jiangxy.github.io");
+        corsConfiguration.addAllowedOrigin("https://ai-co.usze.xyz");
         corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.addExposedHeader("Authorization"); //추가
+        corsConfiguration.addExposedHeader("Authorization");
         corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Authorization-refresh", "token"));
         corsConfiguration.setAllowedMethods(List.of("GET","PUT","POST","DELETE","OPTIONS"));
         corsConfiguration.setMaxAge(1000L*60*60);
