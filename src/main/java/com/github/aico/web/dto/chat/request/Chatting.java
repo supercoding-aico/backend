@@ -14,7 +14,11 @@ public class Chatting {
     private Long teamId;
     private Long userId;
     private String content;
-    private final LocalDateTime createdAt =LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    public void saveCreatedAt(){
+        this.createdAt = LocalDateTime.now();
+    }
 
 
 

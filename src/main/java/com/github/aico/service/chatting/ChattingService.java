@@ -40,7 +40,11 @@ public class ChattingService {
 //        Chat chat = Chat.of(chatting,sendTeamUser);
 
 //        chatRepository.save(chat);
+        chatting.saveCreatedAt();
+        log.info("chatting");
         redisUtil.addChatting(chatting);
+        log.info("chatting" + chatting);
+        log.info("chatting" + chatting.getTeamId());
 
         messagingTemplate.convertAndSend("/topic/room/" + chatting.getTeamId(), chatting);
     }
