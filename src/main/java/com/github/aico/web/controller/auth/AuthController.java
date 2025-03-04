@@ -54,26 +54,26 @@ public class AuthController {
 //            cookie.setMaxAge(60 * 60 * 24);
 //            cookie.setAttribute("SameSite","None");
 //
-//            response.addCookie(cookie);
-//            ResponseCookie cookie = ResponseCookie.from("Authorization", token)
-//                    .httpOnly(true)
-//                    .secure(true) // https 환경에서 true로 설정
-//                    .path("/")
-//                    .maxAge(60 * 60 * 24)
-////                    .domain("www.ai-co.store")
-//                    .sameSite("None") // SameSite 설정
-//                    .build();
-            Cookie cookie = new Cookie("Authorization", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60 * 24);
-//            cookie.setDomain("www.ai-co.store");
-            cookie.setAttribute("SameSite","None");
-
-
-
             response.addCookie(cookie);
+            ResponseCookie cookie = ResponseCookie.from("Authorization", token)
+                    .httpOnly(true)
+                    .secure(true) // https 환경에서 true로 설정
+                    .path("/")
+                    .maxAge(60 * 60 * 24)
+//                    .domain("www.ai-co.store")
+                    .sameSite("None") // SameSite 설정
+                    .build();
+//            Cookie cookie = new Cookie("Authorization", token);
+//            cookie.setHttpOnly(true);
+//            cookie.setSecure(true);
+//            cookie.setPath("/");
+//            cookie.setMaxAge(60 * 60 * 24);
+////            cookie.setDomain("www.ai-co.store");
+//            cookie.setAttribute("SameSite","None");
+
+
+
+            response.addHeader("Set-Cookie",cookie.toString());
 
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
         } else {
