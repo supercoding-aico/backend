@@ -56,7 +56,7 @@ public class AuthController {
 //
 //            response.addCookie(cookie);
             ResponseCookie cookie = ResponseCookie.from("access_token", token)
-                    .httpOnly(true)
+                    .httpOnly(false)
                     .secure(true) // https 환경에서 true로 설정
                     .path("/")
                     .maxAge(60 * 60 * 24)
