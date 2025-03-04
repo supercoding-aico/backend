@@ -28,4 +28,8 @@ public class Team extends BaseEntity {
     public void updateTeam(MakeTeam makeTeam){
         this.teamName = makeTeam.getName();
     }
+
+    public Team(Long teamId) {
+        this.teamId = teamId;
+    }
 }
