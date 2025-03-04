@@ -63,17 +63,17 @@ public class AuthController {
 ////                    .domain("www.ai-co.store")
 //                    .sameSite("None") // SameSite 설정
 //                    .build();
-            Cookie cookie1 = new Cookie("Authorization", token);
-            cookie1.setHttpOnly(true);
-            cookie1.setSecure(true);
-            cookie1.setPath("/");
-            cookie1.setMaxAge(60 * 60 * 24);
-            cookie1.setDomain("www.ai-co.store");
-            cookie1.setAttribute("SameSite","None");
+            Cookie cookie = new Cookie("Authorization", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(60 * 60 * 24);
+//            cookie.setDomain("www.ai-co.store");
+            cookie.setAttribute("SameSite","None");
 
 
 
-            response.addCookie(cookie1);
+            response.addCookie(cookie);
 
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
         } else {
