@@ -60,7 +60,7 @@ public class AuthController {
                     .secure(true) // https 환경에서 true로 설정
                     .path("/")
                     .maxAge(60 * 60 * 24)
-//                    .domain("www.ai-co.store")
+//                    .domain("ai-co.usze.xyz")
                     .sameSite("None") // SameSite 설정
                     .build();
 //            Cookie cookie = new Cookie("Authorization", token);
@@ -70,8 +70,6 @@ public class AuthController {
 //            cookie.setMaxAge(60 * 60 * 24);
 ////            cookie.setDomain("www.ai-co.store");
 //            cookie.setAttribute("SameSite","None");/
-
-
 
             response.addHeader("Set-Cookie",cookie.toString());
 
