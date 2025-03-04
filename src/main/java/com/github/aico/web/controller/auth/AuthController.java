@@ -60,11 +60,12 @@ public class AuthController {
                     .secure(true) // https 환경에서 true로 설정
                     .path("/")
                     .maxAge(60 * 60 * 24)
-                    .domain("usze.xyz")
+                    .domain("www.ai-co.store")
                     .sameSite("None") // SameSite 설정
                     .build();
 
             response.addHeader("Set-Cookie", cookie.toString());
+
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
         } else {
             return new ResponseDto(HttpStatus.UNAUTHORIZED.value(), "아이디 또는 비밀번호를 다시 확인해주세요");
