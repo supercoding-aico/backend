@@ -57,10 +57,11 @@ public class AuthController {
 //            response.addCookie(cookie);
             ResponseCookie cookie = ResponseCookie.from("access_token", token)
                     .httpOnly(true)
-//                    .secure(true) // https 환경에서 true로 설정
+                    .secure(true) // https 환경에서 true로 설정
                     .path("/")
                     .maxAge(60 * 60 * 24)
-//                    .sameSite("None") // SameSite 설정
+//                    .domain("www.ai-co.store")
+                    .sameSite("None") // SameSite 설정
                     .build();
 
             response.addHeader("Set-Cookie", cookie.toString());
