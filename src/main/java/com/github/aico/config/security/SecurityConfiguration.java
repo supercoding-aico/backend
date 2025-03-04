@@ -58,6 +58,7 @@ public class SecurityConfiguration {
         corsConfiguration.addAllowedOrigin("https://ai-co.usze.xyz");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addExposedHeader("Authorization");
+        corsConfiguration.addExposedHeader("Set-Cookie");
         corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Authorization-refresh", "token"));
         corsConfiguration.setAllowedMethods(List.of("GET","PUT","POST","DELETE","OPTIONS"));
         corsConfiguration.setMaxAge(1000L*60*60);
