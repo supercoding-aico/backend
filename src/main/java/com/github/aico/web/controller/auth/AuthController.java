@@ -54,7 +54,7 @@ public class AuthController {
 //            cookie.setMaxAge(60 * 60 * 24);
 //            cookie.setAttribute("SameSite","None");
 //
-            response.addCookie(cookie);
+//            response.addCookie(cookie);
             ResponseCookie cookie = ResponseCookie.from("Authorization", token)
                     .httpOnly(true)
                     .secure(true) // https 환경에서 true로 설정
@@ -69,7 +69,7 @@ public class AuthController {
 //            cookie.setPath("/");
 //            cookie.setMaxAge(60 * 60 * 24);
 ////            cookie.setDomain("www.ai-co.store");
-//            cookie.setAttribute("SameSite","None");
+//            cookie.setAttribute("SameSite","None");/
 
 
 
