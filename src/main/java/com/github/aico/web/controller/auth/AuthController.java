@@ -60,7 +60,7 @@ public class AuthController {
                     .secure(true) // https 환경에서 true로 설정
                     .path("/")
                     .maxAge(60 * 60 * 24)
-//                    .domain("ai-co.usze.xyz")
+                    .domain("ai-co.usze.xyz")
                     .sameSite("None") // SameSite 설정
                     .build();
 
