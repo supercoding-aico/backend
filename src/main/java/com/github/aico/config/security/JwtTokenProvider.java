@@ -92,7 +92,7 @@ public class JwtTokenProvider {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("access_token".equals(cookie.getName())) {
+                if ("Authorization".equals(cookie.getName())) {
                     return cookie.getValue();  // 쿠키에서 토큰 값 추출
                 }
             }
