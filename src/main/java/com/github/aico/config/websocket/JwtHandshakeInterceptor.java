@@ -27,7 +27,7 @@
 //            Cookie[] cookies = httpServletRequest.getCookies();
 //            if (cookies != null) {
 //                for (Cookie cookie : cookies) {
-//                    if ("access_token".equals(cookie.getName())) {
+//                    if ("Authorization".equals(cookie.getName())) {
 //                        String token = cookie.getValue();
 //                       log.info("쿠키에 토큰 값: " + token);
 //

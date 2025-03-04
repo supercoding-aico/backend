@@ -68,7 +68,7 @@ public class AuthController {
             cookie1.setSecure(true);
             cookie1.setPath("/");
             cookie1.setMaxAge(60 * 60 * 24);
-            cookie1.setDomain("ai-co.usze.xyz");
+//            cookie1.setDomain("ai-co.usze.xyz");
             cookie1.setAttribute("SameSite","None");
 
 
