@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -166,20 +167,36 @@ public class AuthService {
         return new ResponseDto(HttpStatus.CREATED.value(),"새로운 토큰이 발급되었습니다.");
     }
     private void deleteCookie(HttpServletResponse response){
-        Cookie oldCookie = new Cookie("access_token", null);
-        oldCookie.setHttpOnly(true);
-//        oldCookie.setSecure(true);
-        oldCookie.setPath("/");
-        oldCookie.setMaxAge(0);
-        response.addCookie(oldCookie);
+//        Cookie oldCookie = new Cookie("access_token", null);
+//        oldCookie.setHttpOnly(true);
+////        oldCookie.setSecure(true);
+//        oldCookie.setPath("/");
+//        oldCookie.setMaxAge(0);
+//        response.addCookie(oldCookie);
+        ResponseCookie cookie = ResponseCookie.from("Authorization",null)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(0)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
     }
     private void createCookie(String newAccessToken,HttpServletResponse response){
-        Cookie newCookie = new Cookie("access_token", newAccessToken);
-        newCookie.setHttpOnly(true);
-//        newCookie.setSecure(true);
-        newCookie.setPath("/");
-        newCookie.setMaxAge(60 * 60 * 24);
-        response.addCookie(newCookie);
+//        Cookie newCookie = new Cookie("access_token", newAccessToken);
+//        newCookie.setHttpOnly(true);
+////        newCookie.setSecure(true);
+//        newCookie.setPath("/");
+//        newCookie.setMaxAge(60 * 60 * 24);
+//        response.addCookie(newCookie);
+        ResponseCookie cookie = ResponseCookie.from("Authorization", newAccessToken)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(60 * 60 * 24)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
     }
     /**
      * team가입
