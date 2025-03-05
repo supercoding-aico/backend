@@ -83,7 +83,6 @@ public class AuthService {
      * */
     @Transactional
     public ResponseDto signUpResult(SignUpRequest signUpRequest,String token) {
-
         String email = signUpRequest.getEmail();
         String nickname = signUpRequest.getNickname();
         if (userRepository.existsByEmail(email)){
