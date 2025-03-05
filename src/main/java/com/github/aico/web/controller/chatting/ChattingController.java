@@ -20,6 +20,7 @@ public class ChattingController {
     private final ChattingService chattingService;
     @MessageMapping("/room")
     public void sendChatting(@Payload Chatting chatting) {
+        log.info(chatting.getContent());
         chattingService.sendChatting(chatting);
 
     }
