@@ -15,6 +15,7 @@ import com.github.aico.web.dto.base.ResponseDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -41,7 +42,7 @@ public class AuthController {
 
     }
     @PostMapping("/sign-up")
-    public ResponseDto signUp(@RequestParam(required = false,value = "token")String token,@RequestBody SignUpRequest signUpRequest){
+    public ResponseDto signUp(@RequestParam(required = false,value = "token")String token,@Valid @RequestBody SignUpRequest signUpRequest){
         return authService.signUpResult(signUpRequest,token);
     }
     @PostMapping("/logout")

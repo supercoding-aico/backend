@@ -61,6 +61,8 @@ dependencies {
 
     //redis에 Jackson사용
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    //이메일 유효성
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 
 }
