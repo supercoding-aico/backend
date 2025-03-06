@@ -71,23 +71,23 @@ public class ChatService {
     /**
      * 일정 시간마다 redis에 남아있는 채팅 저장해주기
      * */
-    @Scheduled(fixedRate = 1800000) //30분
-    public void chatHistorySave(){
-        List<Chatting> chattings = redisUtil.getAllMessage();
-        if (!chattings.isEmpty()){
-            redisUtil.deleteAllMessage();
-            List<Chat> historyChats = chattings.stream()
-                    .map(chat -> {
-                        User findUser = userRepository.findById(chat.getUserId())
-                                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
-                        Team team = teamRepository.findById(chat.getTeamId())
-                                .orElseThrow(()-> new NotFoundException(chat.getTeamId() + "에 해당하는 팀은 존재하지 않습니다."));
-                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
-                                .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
-                        return Chat.of(chat, teamUser);
-                    })
-                    .toList();
-            chatRepository.saveAllBatch(historyChats);
-        }
-    }
+//    @Scheduled(fixedRate = 1800000) //30분
+//    public void chatHistorySave(){
+//        List<Chatting> chattings = redisUtil.getAllMessage();
+//        if (!chattings.isEmpty()){
+//            redisUtil.deleteAllMessage();
+//            List<Chat> historyChats = chattings.stream()
+//                    .map(chat -> {
+//                        User findUser = userRepository.findById(chat.getUserId())
+//                                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
+//                        Team team = teamRepository.findById(chat.getTeamId())
+//                                .orElseThrow(()-> new NotFoundException(chat.getTeamId() + "에 해당하는 팀은 존재하지 않습니다."));
+//                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
+//                                .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
+//                        return Chat.of(chat, teamUser);
+//                    })
+//                    .toList();
+//            chatRepository.saveAllBatch(historyChats);
+//        }
+//    }
 }

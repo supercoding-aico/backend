@@ -11,6 +11,8 @@ import com.github.aico.repository.team_user.TeamRole;
 import com.github.aico.repository.team_user.TeamUser;
 import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
+import com.github.aico.repository.user.UserProfileImage;
+import com.github.aico.repository.user.UserProfileImageRepository;
 import com.github.aico.repository.user.UserRepository;
 import com.github.aico.repository.user_role.UserRole;
 import com.github.aico.repository.user_role.UserRoleRepository;
@@ -57,6 +59,8 @@ public class AuthService {
     private final RedisUtil redisUtil;
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
+    private final UserProfileImageRepository userProfileImageRepository;
+
     /**
      * 닉네임 중복확인
      * */
@@ -99,6 +103,8 @@ public class AuthService {
         UserRole userRole = UserRole.of(role,user);
         User saveUser = userRepository.save(user);
         userRoleRepository.save(userRole);
+        UserProfileImage upi = UserProfileImage.createDefault(saveUser);
+        userProfileImageRepository.save(upi);
         //팀가입으로 회원가입하는 경우
         if (token !=null){
            joinTeam(token,signUpRequest,saveUser);
@@ -139,12 +145,16 @@ public class AuthService {
     public UserInfo getUserInfo(LoginRequest loginRequest) {
         User user = userRepository.findByEmailUserFetchJoin(loginRequest.getEmail())
                 .orElseThrow(()->new NotFoundException(loginRequest.getEmail()+"에 해당하는 유저를 찾을 수 없습니다."));
-        return UserInfo.from(user);
+        UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
+                .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));
+        return UserInfo.of(user,userProfileImage.getImageUrl());
 
     }
 
     public ResponseDto loginValidRequest(User user) {
-        return new ResponseDto(HttpStatus.OK.value(),"토큰이 유효합니다.", UserInfo.from(user));
+        UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
+                .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));
+        return new ResponseDto(HttpStatus.OK.value(),"토큰이 유효합니다.", UserInfo.of(user,userProfileImage.getImageUrl()));
     }
 
     public ResponseDto refreshToken(String accessToken, HttpServletResponse response) {
