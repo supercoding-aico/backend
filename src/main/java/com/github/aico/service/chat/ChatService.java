@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +36,13 @@ public class ChatService {
     private final TeamRepository teamRepository;
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
-    private final EntityManager entityManager;
+
     @Transactional
     public ResponseDto getTeamChatListResult(User user , Long teamId, Integer page) {
         List<Chatting> chattings = redisUtil.getMessageListFromRedis(teamId);
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀은 존재하지 않습니다."));
+        //채팅 리스트 불러오기 전에 redis에 저장되어 있는 채팅 db에 저장
         if (!chattings.isEmpty()){
             redisUtil.removeChattingFromRedis(teamId);
             List<Chat> historyChats = chattings.stream()
@@ -53,10 +55,7 @@ public class ChatService {
                     })
                     .toList();
             chatRepository.saveAllBatch(historyChats);
-
         }
-
-
         boolean exists = teamUserRepository.existsByTeamAndUser(team,user);
         if (!exists){
             throw new NotFoundException(teamId + "에 해당하는 유저가 아닙니다.");
@@ -67,4 +66,28 @@ public class ChatService {
         Page<ChatResponse> chatResponses = chats.map(ChatResponse::from);
         return new ResponseDto(HttpStatus.OK.value(),team.getTeamName() + "에 대한 채팅 리스트 조회",chatResponses);
     }
+
+
+    /**
+     * 일정 시간마다 redis에 남아있는 채팅 저장해주기
+     * */
+//    @Scheduled(fixedRate = 1800000) //30분
+//    public void chatHistorySave(){
+//        List<Chatting> chattings = redisUtil.getAllMessage();
+//        if (!chattings.isEmpty()){
+//            redisUtil.deleteAllMessage();
+//            List<Chat> historyChats = chattings.stream()
+//                    .map(chat -> {
+//                        User findUser = userRepository.findById(chat.getUserId())
+//                                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
+//                        Team team = teamRepository.findById(chat.getTeamId())
+//                                .orElseThrow(()-> new NotFoundException(chat.getTeamId() + "에 해당하는 팀은 존재하지 않습니다."));
+//                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
+//                                .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
+//                        return Chat.of(chat, teamUser);
+//                    })
+//                    .toList();
+//            chatRepository.saveAllBatch(historyChats);
+//        }
+//    }
 }

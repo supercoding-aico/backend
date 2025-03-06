@@ -5,6 +5,9 @@ import com.github.aico.web.dto.base.ResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.method.MethodValidationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,6 +21,18 @@ public class ExceptionControllerAdvice {
     public ResponseDto handleNotFoundException(NotFoundException nfe){
         log.error("클라이언트 요청 이후 DB검색 중 발생한 에러입니다. " + nfe.getMessage());
         return new ResponseDto(HttpStatus.NOT_FOUND.value(),nfe.getMessage());
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto handleMethodValidationException(MethodArgumentNotValidException mve){
+        String errorMessage =   mve.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("잘못된 요청입니다.");
+        log.error("클라이언트 요청 이후 DB검색 중 발생한 에러입니다. " + errorMessage);
+        return new ResponseDto(HttpStatus.BAD_REQUEST.value(),errorMessage);
     }
     @ExceptionHandler(TokenValidateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -11,6 +11,8 @@ import com.github.aico.repository.team_user.TeamRole;
 import com.github.aico.repository.team_user.TeamUser;
 import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
+import com.github.aico.repository.user.UserProfileImage;
+import com.github.aico.repository.user.UserProfileImageRepository;
 import com.github.aico.repository.user.UserRepository;
 import com.github.aico.repository.user_role.UserRole;
 import com.github.aico.repository.user_role.UserRoleRepository;
@@ -30,6 +32,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -56,6 +59,8 @@ public class AuthService {
     private final RedisUtil redisUtil;
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
+    private final UserProfileImageRepository userProfileImageRepository;
+
     /**
      * 닉네임 중복확인
      * */
@@ -83,7 +88,6 @@ public class AuthService {
      * */
     @Transactional
     public ResponseDto signUpResult(SignUpRequest signUpRequest,String token) {
-
         String email = signUpRequest.getEmail();
         String nickname = signUpRequest.getNickname();
         if (userRepository.existsByEmail(email)){
@@ -99,6 +103,8 @@ public class AuthService {
         UserRole userRole = UserRole.of(role,user);
         User saveUser = userRepository.save(user);
         userRoleRepository.save(userRole);
+        UserProfileImage upi = UserProfileImage.createDefault(saveUser);
+        userProfileImageRepository.save(upi);
         //팀가입으로 회원가입하는 경우
         if (token !=null){
            joinTeam(token,signUpRequest,saveUser);
@@ -139,12 +145,16 @@ public class AuthService {
     public UserInfo getUserInfo(LoginRequest loginRequest) {
         User user = userRepository.findByEmailUserFetchJoin(loginRequest.getEmail())
                 .orElseThrow(()->new NotFoundException(loginRequest.getEmail()+"에 해당하는 유저를 찾을 수 없습니다."));
-        return UserInfo.from(user);
+        UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
+                .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));
+        return UserInfo.of(user,userProfileImage.getImageUrl());
 
     }
 
     public ResponseDto loginValidRequest(User user) {
-        return new ResponseDto(HttpStatus.OK.value(),"토큰이 유효합니다.", UserInfo.from(user));
+        UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
+                .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));
+        return new ResponseDto(HttpStatus.OK.value(),"토큰이 유효합니다.", UserInfo.of(user,userProfileImage.getImageUrl()));
     }
 
     public ResponseDto refreshToken(String accessToken, HttpServletResponse response) {
@@ -167,20 +177,36 @@ public class AuthService {
         return new ResponseDto(HttpStatus.CREATED.value(),"새로운 토큰이 발급되었습니다.");
     }
     private void deleteCookie(HttpServletResponse response){
-        Cookie oldCookie = new Cookie("access_token", null);
-        oldCookie.setHttpOnly(true);
-//        oldCookie.setSecure(true);
-        oldCookie.setPath("/");
-        oldCookie.setMaxAge(0);
-        response.addCookie(oldCookie);
+//        Cookie oldCookie = new Cookie("access_token", null);
+//        oldCookie.setHttpOnly(true);
+////        oldCookie.setSecure(true);
+//        oldCookie.setPath("/");
+//        oldCookie.setMaxAge(0);
+//        response.addCookie(oldCookie);
+        ResponseCookie cookie = ResponseCookie.from("Authorization",null)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(0)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
     }
     private void createCookie(String newAccessToken,HttpServletResponse response){
-        Cookie newCookie = new Cookie("access_token", newAccessToken);
-        newCookie.setHttpOnly(true);
-//        newCookie.setSecure(true);
-        newCookie.setPath("/");
-        newCookie.setMaxAge(60 * 60 * 24);
-        response.addCookie(newCookie);
+//        Cookie newCookie = new Cookie("access_token", newAccessToken);
+//        newCookie.setHttpOnly(true);
+////        newCookie.setSecure(true);
+//        newCookie.setPath("/");
+//        newCookie.setMaxAge(60 * 60 * 24);
+//        response.addCookie(newCookie);
+        ResponseCookie cookie = ResponseCookie.from("Authorization", newAccessToken)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(60 * 60 * 24)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
     }
     /**
      * team가입
