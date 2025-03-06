@@ -8,14 +8,17 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class RedisUtil {
     private final StringRedisTemplate redisTemplate;
     private final RedisTemplate<String, Chatting> chattingRedisTemplate;
+    private final String team = "team";
 
     public String getData(String key){
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
@@ -34,21 +37,40 @@ public class RedisUtil {
         redisTemplate.delete(key);
     }
     public void addChatting(Chatting chatting) {
-        String key = chatting.getTeamId().toString();
+        String key = team + chatting.getTeamId().toString();
         chattingRedisTemplate.opsForList().rightPush(key, chatting);
-
     }
+
+    public List<Chatting> getAllMessage(){
+        String pattern = team+"*";
+        Set<String> keys = chattingRedisTemplate.keys(pattern);
+        if (keys.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<Chatting> allChatting = new ArrayList<>();
+        for (String key : keys){
+            List<Chatting> chattings = chattingRedisTemplate.opsForList().range(key,0,-1);
+            allChatting.addAll(chattings);
+        }
+        return allChatting;
+    }
+    public void deleteAllMessage(){
+        String pattern = team+"*";
+        Set<String> keys = chattingRedisTemplate.keys(pattern);
+        chattingRedisTemplate.delete(keys);
+    }
+
     public List<Chatting> getMessageListFromRedis(Long teamId) {
-        String key = teamId.toString();
-        List<Chatting> messages = chattingRedisTemplate.opsForList().range(key, 0, -1);
-        if (messages != null){
-            return messages;
+        String key = team + teamId.toString();
+        List<Chatting> chattings = chattingRedisTemplate.opsForList().range(key, 0, -1);
+        if (chattings != null){
+            return chattings;
         }else {
             return Collections.emptyList();
         }
     }
     public void removeChattingFromRedis(Long teamId) {
-        String key = teamId.toString();
+        String key = team + teamId.toString();
         chattingRedisTemplate.delete(key);
     }
 

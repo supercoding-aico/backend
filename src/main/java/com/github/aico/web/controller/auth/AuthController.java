@@ -13,9 +13,12 @@ import com.github.aico.web.dto.auth.request.SignUpRequest;
 import com.github.aico.web.dto.auth.resposne.UserInfo;
 import com.github.aico.web.dto.base.ResponseDto;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,8 +42,20 @@ public class AuthController {
 
     }
     @PostMapping("/sign-up")
-    public ResponseDto signUp(@RequestParam(required = false,value = "token")String token,@RequestBody SignUpRequest signUpRequest){
+    public ResponseDto signUp(@RequestParam(required = false,value = "token")String token,@Valid @RequestBody SignUpRequest signUpRequest){
         return authService.signUpResult(signUpRequest,token);
+    }
+    @PostMapping("/logout")
+    public ResponseDto logout(HttpServletResponse response){
+        ResponseCookie cookie = ResponseCookie.from("Authorization", null)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(0)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
+        return new ResponseDto(HttpStatus.OK.value(), "로그아웃 성공");
     }
     @PostMapping("/login")
     public ResponseDto login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
@@ -55,6 +70,7 @@ public class AuthController {
 //            cookie.setAttribute("SameSite","None");
 //
 //            response.addCookie(cookie);
+
             ResponseCookie cookie = ResponseCookie.from("Authorization", token)
                     .httpOnly(true)
                     .secure(true) // https 환경에서 true로 설정
@@ -90,7 +106,7 @@ public class AuthController {
         return UserInfo.from(user1);
     }
     @PostMapping("/token/refresh")
-    public ResponseDto refreshToken(@CookieValue(value = "access_token") String accessToken,HttpServletResponse response){
+    public ResponseDto refreshToken(@CookieValue(value = "Authorization") String accessToken,HttpServletResponse response){
         return authService.refreshToken(accessToken,response);
     }
 }
