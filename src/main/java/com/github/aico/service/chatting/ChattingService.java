@@ -24,10 +24,6 @@ import java.time.LocalDateTime;
 @Slf4j
 public class ChattingService {
     private final SimpMessagingTemplate messagingTemplate;
-    private final ChatRepository chatRepository;
-    private final TeamUserRepository teamUserRepository;
-    private final TeamRepository teamRepository;
-    private final UserRepository userRepository;
     private final RedisUtil redisUtil;
 
     public void sendChatting(Chatting chatting) {

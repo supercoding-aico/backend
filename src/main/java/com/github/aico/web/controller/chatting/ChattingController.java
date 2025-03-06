@@ -22,6 +22,6 @@ public class ChattingController {
     public void sendChatting(@Payload Chatting chatting) {
         log.info(chatting.getContent());
         chattingService.sendChatting(chatting);
-
     }
+
 }
