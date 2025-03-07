@@ -240,7 +240,8 @@ public class AuthService {
     }
 
     public void logoutResult(User user,HttpServletResponse response) {
-        deleteCookie(response);
         refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+        deleteCookie(response);
+
     }
 }
