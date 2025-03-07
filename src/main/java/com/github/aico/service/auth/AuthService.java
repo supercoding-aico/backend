@@ -129,18 +129,20 @@ public class AuthService {
                     .stream().map(UserRole::getRole)
                     .map(Role::getRoleName)
                     .collect(Collectors.toList());
-
+            //refreshToken 존재 여부 확인 후
             if (!refreshTokenRepository.existsByUser(user)){
-                String refresh = jwtTokenProvider.createRefreshToken(loginRequest.getEmail());
-                RefreshToken refreshToken = RefreshToken.of(user,refresh);
-                refreshTokenRepository.save(refreshToken);
+                createRefreshToken(user,loginRequest.getEmail());
             }
-
             return jwtTokenProvider.createToken(loginRequest.getEmail(), roles);
         }catch (Exception e) {
             e.printStackTrace();
             throw new NotAcceptException("로그인 정보가 일치하지 않습니다..");
         }
+    }
+    public void createRefreshToken(User user,String email){
+        String refresh = jwtTokenProvider.createRefreshToken(email);
+        RefreshToken refreshToken = RefreshToken.of(user,refresh);
+        refreshTokenRepository.save(refreshToken);
     }
     /**
      * 유저 정보 출력
@@ -229,7 +231,7 @@ public class AuthService {
                 .build();
         response.addHeader("Set-Cookie",cookie.toString());
     }
-    private void createCookie(String newAccessToken,HttpServletResponse response){
+    public void createCookie(String newAccessToken,HttpServletResponse response){
         ResponseCookie cookie = ResponseCookie.from("Authorization", newAccessToken)
                 .httpOnly(true)
                 .secure(true) // https 환경에서 true로 설정

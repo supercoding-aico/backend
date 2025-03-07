@@ -55,16 +55,7 @@ public class AuthController {
     public ResponseDto login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         String  token = authService.loginResult(loginRequest);
         if (token != null && !token.isEmpty()) {
-            ResponseCookie cookie = ResponseCookie.from("Authorization", token)
-                    .httpOnly(true)
-                    .secure(true) // https 환경에서 true로 설정
-                    .path("/")
-                    .maxAge(60 * 60 * 24)
-                    .sameSite("None") // SameSite 설정
-                    .build();
-
-            response.addHeader("Set-Cookie",cookie.toString());
-
+            authService.createCookie(token,response);
             return new ResponseDto(HttpStatus.OK.value(), "로그인에 성공하였습니다.",authService.getUserInfo(loginRequest));
         } else {
             return new ResponseDto(HttpStatus.UNAUTHORIZED.value(), "아이디 또는 비밀번호를 다시 확인해주세요");
