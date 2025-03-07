@@ -141,6 +141,9 @@ public class AuthService {
             throw new NotAcceptException("로그인 정보가 일치하지 않습니다..");
         }
     }
+    /**
+     * 유저 정보 출력
+     * */
 
     public UserInfo getUserInfo(LoginRequest loginRequest) {
         User user = userRepository.findByEmailUserFetchJoin(loginRequest.getEmail())
@@ -150,13 +153,17 @@ public class AuthService {
         return UserInfo.of(user,userProfileImage.getImageUrl());
 
     }
-
+    /**
+     *로그인 유지되고 있는지
+     * */
     public ResponseDto loginValidRequest(User user) {
         UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
                 .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));
         return new ResponseDto(HttpStatus.OK.value(),"토큰이 유효합니다.", UserInfo.of(user,userProfileImage.getImageUrl()));
     }
-
+    /**
+    *토큰 재발급
+    * */
     public ResponseDto refreshToken(String accessToken, HttpServletResponse response) {
         String email = jwtTokenProvider.getEmail(accessToken);
         if (email == null) {
@@ -176,38 +183,10 @@ public class AuthService {
         createCookie(newAccessToken,response);
         return new ResponseDto(HttpStatus.CREATED.value(),"새로운 토큰이 발급되었습니다.");
     }
-    private void deleteCookie(HttpServletResponse response){
-//        Cookie oldCookie = new Cookie("access_token", null);
-//        oldCookie.setHttpOnly(true);
-////        oldCookie.setSecure(true);
-//        oldCookie.setPath("/");
-//        oldCookie.setMaxAge(0);
-//        response.addCookie(oldCookie);
-        ResponseCookie cookie = ResponseCookie.from("Authorization",null)
-                .httpOnly(true)
-                .secure(true) // https 환경에서 true로 설정
-                .path("/")
-                .maxAge(0)
-                .sameSite("None") // SameSite 설정
-                .build();
-        response.addHeader("Set-Cookie",cookie.toString());
-    }
-    private void createCookie(String newAccessToken,HttpServletResponse response){
-//        Cookie newCookie = new Cookie("access_token", newAccessToken);
-//        newCookie.setHttpOnly(true);
-////        newCookie.setSecure(true);
-//        newCookie.setPath("/");
-//        newCookie.setMaxAge(60 * 60 * 24);
-//        response.addCookie(newCookie);
-        ResponseCookie cookie = ResponseCookie.from("Authorization", newAccessToken)
-                .httpOnly(true)
-                .secure(true) // https 환경에서 true로 설정
-                .path("/")
-                .maxAge(60 * 60 * 24)
-                .sameSite("None") // SameSite 설정
-                .build();
-        response.addHeader("Set-Cookie",cookie.toString());
-    }
+    /**
+     * 메소드
+     * */
+
     /**
      * team가입
      * */
@@ -237,5 +216,26 @@ public class AuthService {
         TeamUser teamUser = TeamUser.of(joinTeam, saveUser, TeamRole.MEMBER);
         teamUserRepository.save(teamUser);
 
+    }
+
+    private void deleteCookie(HttpServletResponse response){
+        ResponseCookie cookie = ResponseCookie.from("Authorization",null)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(0)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
+    }
+    private void createCookie(String newAccessToken,HttpServletResponse response){
+        ResponseCookie cookie = ResponseCookie.from("Authorization", newAccessToken)
+                .httpOnly(true)
+                .secure(true) // https 환경에서 true로 설정
+                .path("/")
+                .maxAge(60 * 60 * 24)
+                .sameSite("None") // SameSite 설정
+                .build();
+        response.addHeader("Set-Cookie",cookie.toString());
     }
 }
