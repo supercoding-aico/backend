@@ -46,46 +46,22 @@ public class AuthController {
         return authService.signUpResult(signUpRequest,token);
     }
     @PostMapping("/logout")
-    public ResponseDto logout(HttpServletResponse response){
-        ResponseCookie cookie = ResponseCookie.from("Authorization", null)
-                .httpOnly(true)
-                .secure(true) // https 환경에서 true로 설정
-                .path("/")
-                .maxAge(0)
-                .sameSite("None") // SameSite 설정
-                .build();
-        response.addHeader("Set-Cookie",cookie.toString());
+    public ResponseDto logout(@JwtUser User user, HttpServletResponse response){
+        authService.logoutResult(user,response);
+
         return new ResponseDto(HttpStatus.OK.value(), "로그아웃 성공");
     }
     @PostMapping("/login")
     public ResponseDto login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
         String  token = authService.loginResult(loginRequest);
         if (token != null && !token.isEmpty()) {
-////            response.setHeader("Authorization", "Bearer " + token);
-//            Cookie cookie = new Cookie("access_token", token);
-//            cookie.setHttpOnly(true);
-////            cookie.setSecure(true);
-//            cookie.setPath("/");
-//            cookie.setMaxAge(60 * 60 * 24);
-//            cookie.setAttribute("SameSite","None");
-//
-//            response.addCookie(cookie);
-
             ResponseCookie cookie = ResponseCookie.from("Authorization", token)
                     .httpOnly(true)
                     .secure(true) // https 환경에서 true로 설정
                     .path("/")
                     .maxAge(60 * 60 * 24)
-//                    .domain("ai-co.usze.xyz")
                     .sameSite("None") // SameSite 설정
                     .build();
-//            Cookie cookie = new Cookie("Authorization", token);
-//            cookie.setHttpOnly(true);
-//            cookie.setSecure(true);
-//            cookie.setPath("/");
-//            cookie.setMaxAge(60 * 60 * 24);
-////            cookie.setDomain("www.ai-co.store");
-//            cookie.setAttribute("SameSite","None");/
 
             response.addHeader("Set-Cookie",cookie.toString());
 
@@ -100,8 +76,6 @@ public class AuthController {
     }
     @GetMapping("/test")
     public UserInfo test(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-
-
         User user1 = userRepository.findByEmailWithRoles(customUserDetails.getUsername()).orElseThrow(()-> new NotFoundException("유저 찾기 불가"));
         return UserInfo.from(user1);
     }
