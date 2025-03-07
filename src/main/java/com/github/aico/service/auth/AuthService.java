@@ -129,8 +129,9 @@ public class AuthService {
                     .stream().map(UserRole::getRole)
                     .map(Role::getRoleName)
                     .collect(Collectors.toList());
-            String refresh = jwtTokenProvider.createRefreshToken(loginRequest.getEmail());
+
             if (!refreshTokenRepository.existsByUser(user)){
+                String refresh = jwtTokenProvider.createRefreshToken(loginRequest.getEmail());
                 RefreshToken refreshToken = RefreshToken.of(user,refresh);
                 refreshTokenRepository.save(refreshToken);
             }
