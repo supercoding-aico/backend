@@ -4,6 +4,7 @@ import com.github.aico.repository.user.JwtUser;
 import com.github.aico.repository.user.User;
 import com.github.aico.repository.userDetails.CustomUserDetails;
 import com.github.aico.service.chatting.ChattingService;
+import com.github.aico.web.dto.chat.request.ActiveTeamUser;
 import com.github.aico.web.dto.chat.request.Chatting;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,14 @@ public class ChattingController {
     public void sendChatting(@Payload Chatting chatting) {
         log.info(chatting.getContent());
         chattingService.sendChatting(chatting);
+    }
+    @MessageMapping("/room/active")
+    public void roomActiveUser(@Payload ActiveTeamUser activeTeamUser) {
+        chattingService.roomInactiveUserResult(activeTeamUser);
+    }
+    @MessageMapping("/room/inactive")
+    public void roomInactiveUser(@Payload ActiveTeamUser activeTeamUser) {
+        chattingService.roomInactiveUserResult(activeTeamUser);
     }
 
 }
