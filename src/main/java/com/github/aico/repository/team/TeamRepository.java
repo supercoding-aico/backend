@@ -14,5 +14,4 @@ public interface TeamRepository extends JpaRepository<Team,Long> {
     @Query("DELETE FROM Team t WHERE t.teamId = :teamId")
     void deleteTeamById(@Param("teamId") Long teamId);
 
-
 }

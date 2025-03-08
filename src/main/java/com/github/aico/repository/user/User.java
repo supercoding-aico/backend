@@ -9,6 +9,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -56,5 +59,12 @@ public class User extends BaseEntity {
         }
     }
 
+    public Long getId() {
+        return userId;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
 
 }
