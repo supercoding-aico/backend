@@ -31,6 +31,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -63,7 +65,7 @@ public class AuthService {
 
     /**
      * 닉네임 중복확인
-     * */
+     **/
     public ResponseDto getNickNameDuplicateCheckResult(NicknameDuplicate nicknameDuplicate) {
         String nickname = nicknameDuplicate.getNickname();
         if (userRepository.existsByNickname(nickname)){
@@ -74,7 +76,7 @@ public class AuthService {
     }
     /**
      * 이메일 중복확인
-     * */
+     **/
     public ResponseDto getEmailDuplicateCheckResult(EmailDuplicate emailDuplicate) {
         String email = emailDuplicate.getEmail();
         if (userRepository.existsByEmail(email)){
@@ -85,7 +87,7 @@ public class AuthService {
     }
     /**
      * 회원가입
-     * */
+     **/
     @Transactional
     public ResponseDto signUpResult(SignUpRequest signUpRequest,String token) {
         String email = signUpRequest.getEmail();
@@ -112,11 +114,9 @@ public class AuthService {
         return new ResponseDto(HttpStatus.CREATED.value(),user.getNickname()+"님 Ai-Co 회원가입이 완료되었습니다.");
     }
 
-
-
     /**
      * 로그인
-     * */
+     **/
     public String loginResult(LoginRequest loginRequest) {
         try{
             Authentication authentication = authenticationManager.authenticate(
@@ -139,15 +139,10 @@ public class AuthService {
             throw new NotAcceptException("로그인 정보가 일치하지 않습니다..");
         }
     }
-    public void createRefreshToken(User user,String email){
-        String refresh = jwtTokenProvider.createRefreshToken(email);
-        RefreshToken refreshToken = RefreshToken.of(user,refresh);
-        refreshTokenRepository.save(refreshToken);
-    }
+
     /**
      * 유저 정보 출력
-     * */
-
+     **/
     public UserInfo getUserInfo(LoginRequest loginRequest) {
         User user = userRepository.findByEmailUserFetchJoin(loginRequest.getEmail())
                 .orElseThrow(()->new NotFoundException(loginRequest.getEmail()+"에 해당하는 유저를 찾을 수 없습니다."));
@@ -158,7 +153,8 @@ public class AuthService {
     }
     /**
      *로그인 유지되고 있는지
-     * */
+     **/
+//    @Cacheable(value = "userInfo", key = "#user.userId")
     public ResponseDto loginValidRequest(User user) {
         UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
                 .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));
@@ -166,7 +162,7 @@ public class AuthService {
     }
     /**
     *토큰 재발급
-    * */
+    **/
     public ResponseDto refreshToken(String accessToken, HttpServletResponse response) {
         String email = jwtTokenProvider.getEmail(accessToken);
         if (email == null) {
@@ -187,12 +183,21 @@ public class AuthService {
         return new ResponseDto(HttpStatus.CREATED.value(),"새로운 토큰이 발급되었습니다.");
     }
     /**
+     * 로그아웃
+     **/
+//    @CacheEvict(value = "userInfo",key = "#user.userId")
+    public void logoutResult(User user,HttpServletResponse response) {
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+        deleteCookie(response);
+    }
+
+    /**
      * 메소드
      * */
 
     /**
      * team가입
-     * */
+     **/
     private void joinTeam(String token, SignUpRequest signUpRequest,User saveUser) {
         String tokenEmail = jwtTokenProvider.getEmail(token);
         Long tokenTeamId = jwtTokenProvider.getTeamId(token);
@@ -220,7 +225,9 @@ public class AuthService {
         teamUserRepository.save(teamUser);
 
     }
-
+    /**
+     * Cookie 삭제
+     * */
     private void deleteCookie(HttpServletResponse response){
         ResponseCookie cookie = ResponseCookie.from("Authorization",null)
                 .httpOnly(true)
@@ -231,6 +238,9 @@ public class AuthService {
                 .build();
         response.addHeader("Set-Cookie",cookie.toString());
     }
+    /**
+     * Cookie 생성
+     * */
     public void createCookie(String newAccessToken,HttpServletResponse response){
         ResponseCookie cookie = ResponseCookie.from("Authorization", newAccessToken)
                 .httpOnly(true)
@@ -241,10 +251,14 @@ public class AuthService {
                 .build();
         response.addHeader("Set-Cookie",cookie.toString());
     }
-
-    public void logoutResult(User user,HttpServletResponse response) {
-        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
-        deleteCookie(response);
-
+    /**
+     * refreshToken 생성
+     * */
+    public void createRefreshToken(User user,String email){
+        String refresh = jwtTokenProvider.createRefreshToken(email);
+        RefreshToken refreshToken = RefreshToken.of(user,refresh);
+        refreshTokenRepository.save(refreshToken);
     }
+
+
 }

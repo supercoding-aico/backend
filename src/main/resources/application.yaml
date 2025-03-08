@@ -12,6 +12,8 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: none
+#  cache:
+#    type: simple
 
     properties:
       hibernate.jdbc.batch_size: 50  # 한 번에 저장할 최대 엔티티 수
