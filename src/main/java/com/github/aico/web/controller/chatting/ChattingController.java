@@ -13,6 +13,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -21,7 +23,8 @@ public class ChattingController {
     private final ChattingService chattingService;
     @MessageMapping("/room")
     public void sendChatting(@Payload Chatting chatting) {
-        log.info(chatting.getContent());
+
+//        log.info(principal.getName());
         chattingService.sendChatting(chatting);
     }
     @MessageMapping("/room/active")
