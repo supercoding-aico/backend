@@ -62,3 +62,7 @@ cloud:
       static: ap-northeast-2  # 서울 리전
     s3:
       bucket: aicoproject
+
+openai:
+  api-key: ENC(HiTnN5L4Y8wbi3RY0tU7/fOwngKkHPmQiimher6CfGIr0yMg3jJUk6uC7BUIGi32SCORd5Z7MgUJXOegXCkk2+2EBChoOfBbnsAC30Z3VkEt8x8uV1uMWnx9K0CCMlUjYLW7FrLnWabvUaGMDmwG3SthILDlk4jRop3OV+VCCoGH5d99BUclFIwrFdfJrjzzxDTSyHEWBDmhxwCVaz2PWO24IBsL/F0R2z5R4dtiLNk=)
+  model: gpt-3.5-turbo-0125
