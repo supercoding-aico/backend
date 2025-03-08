@@ -34,4 +34,5 @@ public class TeamUser {
                 .teamRole(teamRole)
                 .build();
     }
+
 }
