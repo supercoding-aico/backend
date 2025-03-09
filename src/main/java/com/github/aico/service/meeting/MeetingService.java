@@ -15,6 +15,7 @@ import com.github.aico.web.dto.meeting.request.MeetingAiRequest;
 import com.github.aico.web.dto.meeting.request.MeetingUpdateRequest;
 import com.github.aico.web.dto.meeting.response.MeetingAiResponse;
 import com.github.aico.web.dto.meeting.response.MeetingResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MeetingService {
     private final MeetingRepository meetingRepository;
     private final TeamUserRepository teamUserRepository;
@@ -35,17 +37,17 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final OpenAiClient openAiClient;
 
-    public MeetingService(MeetingRepository meetingRepository,
-                          TeamUserRepository teamUserRepository,
-                          TeamRepository teamRepository,
-                          UserRepository userRepository,
-                          OpenAiClient openAiClient) {
-        this.meetingRepository = meetingRepository;
-        this.teamUserRepository = teamUserRepository;
-        this.teamRepository = teamRepository;
-        this.userRepository = userRepository;
-        this.openAiClient = openAiClient;
-    }
+//    public MeetingService(MeetingRepository meetingRepository,
+//                          TeamUserRepository teamUserRepository,
+//                          TeamRepository teamRepository,
+//                          UserRepository userRepository,
+//                          OpenAiClient openAiClient) {
+//        this.meetingRepository = meetingRepository;
+//        this.teamUserRepository = teamUserRepository;
+//        this.teamRepository = teamRepository;
+//        this.userRepository = userRepository;
+//        this.openAiClient = openAiClient;
+//    }
 
     @Transactional
     public ResponseDto requestAiSummary(Long teamId, List<MeetingAiRequest> requestList, User user) {
