@@ -50,12 +50,15 @@ public class ChattingService {
     //유저가 채팅방에서 끊기고 연결된 시간
     @Transactional
     public void roomInactiveUserResult(ActiveTeamUser activeTeamUser) {
-        Team team = teamRepository.findById(activeTeamUser.getTeamId())
-                        .orElseThrow(()-> new NotFoundException("팀을 찾을 수 없습니다."));
-        User user = userRepository.findById(activeTeamUser.getUserId())
-                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
-        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,user)
-                .orElseThrow(()-> new NotFoundException("팀유저를 찾을 수 없습니다."));
-        teamUser.updateChatReadAt();
+        activeTeamUser.saveLastReadAt();
+        redisUtil.addTeamLastReadAt(activeTeamUser);
+
+//        Team team = teamRepository.findById(activeTeamUser.getTeamId())
+//                        .orElseThrow(()-> new NotFoundException("팀을 찾을 수 없습니다."));
+//        User user = userRepository.findById(activeTeamUser.getUserId())
+//                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
+//        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,user)
+//                .orElseThrow(()-> new NotFoundException("팀유저를 찾을 수 없습니다."));
+//        teamUser.updateChatReadAt();
     }
 }

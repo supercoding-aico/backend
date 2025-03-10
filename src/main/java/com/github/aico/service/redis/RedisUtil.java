@@ -9,20 +9,17 @@ import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
 import com.github.aico.repository.user.UserRepository;
 import com.github.aico.service.exceptions.NotFoundException;
+import com.github.aico.web.dto.chat.request.ActiveTeamUser;
 import com.github.aico.web.dto.chat.request.Chatting;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +32,8 @@ public class RedisUtil {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
-    private final String team = "team";
+    private final RedisTemplate<String, ActiveTeamUser> activeTeamUserRedisTemplate;
+    private final String team = "team:";
 
     public String getData(String key){
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
@@ -53,10 +51,7 @@ public class RedisUtil {
     public void deleteData(String key){//지정된 키(key)에 해당하는 데이터를 Redis에서 삭제하는 메서드
         redisTemplate.delete(key);
     }
-    public void addChatting(Chatting chatting) {
-        String key = team + chatting.getTeamId().toString();
-        chattingRedisTemplate.opsForList().rightPush(key, chatting);
-    }
+
 
     public List<Chatting> getAllMessage(){
         String pattern = team+"*";
@@ -73,7 +68,7 @@ public class RedisUtil {
     }
 
     public List<Long> getUserIdByTeamId(Long teamId){
-        String key  = "team_user" + teamId;
+        String key  = "team_user:" + teamId;
         Set<Long> teamUserIds = longRedisTemplate.opsForSet().members(key);
         if (teamUserIds.isEmpty()){
             List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(teamId);
@@ -84,13 +79,13 @@ public class RedisUtil {
         return teamUserIds.stream().toList();
     }
     public List<Long> getTeamIdByUserId(Long userId){
-        String key = "user_team" + userId;
+        String key = "user_team:" + userId;
 
         Set<Long> teamIds = longRedisTemplate.opsForSet().members(key);
         log.info("Redis teamIds for user {}: {}", userId, teamIds);
         if (teamIds.isEmpty()){
             List<Long> teamIdsByDb = teamUserRepository.findTeamIdsByUser(userId);
-            log.info("DB teamIds for user {}: {}", userId, teamIdsByDb);
+
             longRedisTemplate.opsForSet().add(key,teamIdsByDb.toArray(new Long[0]));
             longRedisTemplate.expire(key,24*60*60,TimeUnit.SECONDS);
             return teamIdsByDb;
@@ -98,12 +93,12 @@ public class RedisUtil {
         return teamIds.stream().toList();
     }
     public void invalidateTeamIdsCache(Long userId) {
-        String key = "user_team" + userId;
+        String key = "user_team:" + userId;
         longRedisTemplate.delete(key);
         log.info("Invalidated Redis cache for user {}", userId);
     }
     public void invalidateUsersCache(Long teamId) {
-        String key = "team_user" + teamId;
+        String key = "team_user:" + teamId;
         longRedisTemplate.delete(key);
     }
     public void saveTeamChatting(Long userId) {
@@ -142,6 +137,36 @@ public class RedisUtil {
         Set<String> keys = chattingRedisTemplate.keys(pattern);
         chattingRedisTemplate.delete(keys);
     }
+    public void addChatting(Chatting chatting) {
+        String key = team + chatting.getTeamId().toString();
+        chattingRedisTemplate.opsForList().rightPush(key, chatting);
+    }
+    public void addTeamLastReadAt(ActiveTeamUser activeTeamUser){
+        String key = "team_user_inactive:"+activeTeamUser.getTeamId() +"_"+activeTeamUser.getUserId();
+        log.info("키 값: " + key);
+        ValueOperations<String, ActiveTeamUser> ops = activeTeamUserRedisTemplate.opsForValue();
+        ops.set(key, activeTeamUser);
+    }
+    public List<ActiveTeamUser> getTeamLastReadAt(Long userId){
+        String pattern = "team_user_inactive:*_" + userId;
+        Set<String> keys = chattingRedisTemplate.keys(pattern);
+        ValueOperations<String, ActiveTeamUser> ops = activeTeamUserRedisTemplate.opsForValue();
+        return keys.stream()
+                .map(ops::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+    public void removeAllTeamLastReadAtByUserId(Long userId) {
+        String pattern = "team_user_inactive:*_" + userId;
+        Set<String> keys = activeTeamUserRedisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            activeTeamUserRedisTemplate.delete(keys);
+            log.info("Deleted {} keys for user {}", keys.size(), userId);
+        } else {
+            log.info("No keys found to delete for user {}", userId);
+        }
+    }
+
 
     public List<Chatting> getMessageListFromRedis(Long teamId) {
         String key = team + teamId.toString();

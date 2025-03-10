@@ -12,5 +12,9 @@ import java.time.LocalDateTime;
 public class ActiveTeamUser {
     private Long teamId;
     private Long userId;
+    private LocalDateTime lastReadAt;
+    public void saveLastReadAt(){
+        this.lastReadAt = LocalDateTime.now();
+    }
 
 }

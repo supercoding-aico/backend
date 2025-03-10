@@ -29,6 +29,7 @@ public class ChattingController {
     }
     @MessageMapping("/room/active")
     public void roomActiveUser(@Payload ActiveTeamUser activeTeamUser) {
+        log.info(activeTeamUser.getUserId()+ "유저아이디");
         chattingService.roomInactiveUserResult(activeTeamUser);
     }
     @MessageMapping("/room/inactive")

@@ -19,6 +19,8 @@ import java.util.Optional;
 public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamUserRepository {
     @EntityGraph(attributePaths = {"team"})
     Page<TeamUser> findAllByUser(User user, Pageable pageable);
+    @EntityGraph(attributePaths = {"team"})
+    List<TeamUser> findByUserAndTeamTeamIdIn(User user, List<Long> teamIds);
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
     Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);    boolean existsByTeamAndUser(Team team, User user);

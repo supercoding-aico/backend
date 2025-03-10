@@ -42,5 +42,8 @@ public class TeamUser {
     public void updateChatReadAt(){
         this.chatReadAt = LocalDateTime.now();
     }
+    public void changeChatReadAt(LocalDateTime chatReadAt){
+        this.chatReadAt = chatReadAt;
+    }
 
 }

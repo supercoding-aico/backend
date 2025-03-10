@@ -15,6 +15,7 @@ import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.base.ResponseDto;
+import com.github.aico.web.dto.chat.request.ActiveTeamUser;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.team.response.TeamsResponse;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
@@ -55,7 +56,12 @@ public class TeamService {
     /**
      * 내 팀 리스트 조회
      * */
+    @Transactional
     public ResponseDto getMyTeamListResult(User user,Integer page) {
+        List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAt(user.getUserId());
+        if (!activeTeamUsers.isEmpty()){
+            activeUserSave(activeTeamUsers,user);
+        }
 
         Pageable pageable = PageRequest.of(page,10);
         log.info("N+1테스트 시작");
@@ -80,6 +86,25 @@ public class TeamService {
         });
 
         return new ResponseDto(HttpStatus.OK.value(),user.getNickname()+"님의 team 조회 성공",myTeamResponse);
+    }
+    public void activeUserSave(List<ActiveTeamUser> activeTeamUsers,User user){
+        List<Long> teamIds = activeTeamUsers.stream()
+                .map(ActiveTeamUser::getTeamId)
+                .toList();
+        log.info("teamIds: " + teamIds);
+        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user,teamIds);
+        log.info("teamUserList: " + teamUserList);
+        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
+                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+
+        // TeamUser 업데이트
+        teamUserList.forEach(teamUser -> {
+            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
+            if (activeTeamUser != null) {
+                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
+            }
+        });
+        redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
     }
     /**
      * 팀 만들기

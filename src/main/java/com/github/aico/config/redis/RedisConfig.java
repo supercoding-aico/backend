@@ -2,6 +2,7 @@ package com.github.aico.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.aico.web.dto.chat.request.ActiveTeamUser;
 import com.github.aico.web.dto.chat.request.Chatting;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,21 @@ public class RedisConfig {
         template.setHashValueSerializer(serializer);
 //        template.setKeySerializer(new StringRedisSerializer());
 //        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Chatting.class));
+        return template;
+    }
+    @Bean
+    public RedisTemplate<String, ActiveTeamUser> activeTeamUserRedisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, ActiveTeamUser> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        // Jackson Serializer 설정
+        Jackson2JsonRedisSerializer<ActiveTeamUser> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, ActiveTeamUser.class);
+        // Serializer 적용
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
         return template;
     }
     @Bean
