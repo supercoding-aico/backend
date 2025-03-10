@@ -72,17 +72,17 @@ public class RedisUtil {
         return allChatting;
     }
 
-//    public List<Long> getUserIdByTeamId(Long teamId){
-//        String key  = "team_user" + teamId;
-//        Set<Long> teamUserIds = longRedisTemplate.opsForSet().members(key);
-//        if (teamUserIds.isEmpty()){
-//            List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(teamId);
-//            longRedisTemplate.opsForSet().add(key,userIds.toArray(new Long[0]));
-//            longRedisTemplate.expire(key,24*60*60, TimeUnit.SECONDS);
-//            return userIds;
-//        }
-//        return teamUserIds.stream().toList();
-//    }
+    public List<Long> getUserIdByTeamId(Long teamId){
+        String key  = "team_user" + teamId;
+        Set<Long> teamUserIds = longRedisTemplate.opsForSet().members(key);
+        if (teamUserIds.isEmpty()){
+            List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(teamId);
+            longRedisTemplate.opsForSet().add(key,userIds.toArray(new Long[0]));
+            longRedisTemplate.expire(key,24*60*60, TimeUnit.SECONDS);
+            return userIds;
+        }
+        return teamUserIds.stream().toList();
+    }
     public List<Long> getTeamIdByUserId(Long userId){
         String key = "user_team" + userId;
 
@@ -101,6 +101,10 @@ public class RedisUtil {
         String key = "user_team" + userId;
         longRedisTemplate.delete(key);
         log.info("Invalidated Redis cache for user {}", userId);
+    }
+    public void invalidateUsersCache(Long teamId) {
+        String key = "team_user" + teamId;
+        longRedisTemplate.delete(key);
     }
     public void saveTeamChatting(Long userId) {
 

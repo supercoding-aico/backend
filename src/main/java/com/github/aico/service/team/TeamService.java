@@ -65,21 +65,20 @@ public class TeamService {
         log.info("N+1테스트 끝");
 //        Page<Team>  myTeam = myTeamUser.map(TeamUser::getTeam);
         List<Long> teamIds = redisUtil.getTeamIdByUserId(user.getUserId());
-        log.info("그럼 여기?");
+        //redis에 저장된 채팅들 db에 저장하기
         redisUtil.saveTeamChatting(user.getUserId());
-        log.info("여기가 시작인가?");
+        //팀별로 가장 최근 메시지 시간 가져오기
         List<TeamLatestChatTimeDto> teamLatestChatTimeDtos = chatRepository.findLatestChatTimesByTeamIds(teamIds);
-        log.info("TeamLatestChatTimeDtos: {}", teamLatestChatTimeDtos);
+        //map으로 변환
         Map<Long, LocalDateTime> lastMessageAtMap = teamLatestChatTimeDtos.stream()
                 .collect(Collectors.toMap(TeamLatestChatTimeDto::getTeamId, TeamLatestChatTimeDto::getLatestTime));
-        log.info("LastMessageAtMap: {}", lastMessageAtMap);
-
+        //TeamResponse에 추가
         Page<TeamsResponse> myTeamResponse = myTeamUser.map(teamUser -> {
             Team team = teamUser.getTeam();
             LocalDateTime lastMessageAt = lastMessageAtMap.getOrDefault(team.getTeamId(), null);
             return TeamsResponse.of(team, teamUser, lastMessageAt);
         });
-//        Page<TeamsResponse> myTeamResponse = myTeam.map();
+
         return new ResponseDto(HttpStatus.OK.value(),user.getNickname()+"님의 team 조회 성공",myTeamResponse);
     }
     /**
@@ -168,6 +167,7 @@ public class TeamService {
         else {
             handleMemberLeave(user, leaveUserId, teamUser);
         }
+        redisUtil.invalidateUsersCache(teamId);
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
 
@@ -202,6 +202,7 @@ public class TeamService {
             //회원가입은 되어 있고 팀 가입이 필요할 때
             //회원가입도 안되어 있을 때
             getResponse(teamId, tokenEmail, response,inviteToken);
+            redisUtil.invalidateUsersCache(teamId);
 
         }catch (IOException ioe){
             throw new NotFoundException("잘못된 페이지 요청입니다.");
