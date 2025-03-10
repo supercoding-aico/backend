@@ -3,6 +3,7 @@ package com.github.aico.web.controller.user;
 import com.github.aico.web.dto.auth.resposne.UserInfo;
 import com.github.aico.web.dto.user.request.ProfileUpdateRequest;
 import com.github.aico.web.dto.user.response.ResponseDto;
+import com.github.aico.web.dto.user.request.RoleUpdateRequest;
 import com.github.aico.service.user.UserService;
 import com.github.aico.repository.user.JwtUser;
 import com.github.aico.repository.user.User;
@@ -35,6 +36,11 @@ public class UserController {
     @PutMapping("/image")
     public ResponseDto updateProfileImage(@JwtUser User user, @RequestParam("profileImage") MultipartFile profileImage) {
         return userService.updateProfileImage(user, profileImage);
+    }
+
+    @PutMapping("/role")
+    public ResponseDto updateUserRole(@JwtUser User user, @RequestBody RoleUpdateRequest roleUpdateRequest) {
+        return userService.updateUserRole(user, roleUpdateRequest);
     }
 
 }
