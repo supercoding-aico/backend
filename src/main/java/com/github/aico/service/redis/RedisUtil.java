@@ -149,13 +149,14 @@ public class RedisUtil {
     }
     public List<ActiveTeamUser> getTeamLastReadAt(Long userId){
         String pattern = "team_user_inactive:*_" + userId;
-        Set<String> keys = chattingRedisTemplate.keys(pattern);
+        Set<String> keys = activeTeamUserRedisTemplate.keys(pattern);
         ValueOperations<String, ActiveTeamUser> ops = activeTeamUserRedisTemplate.opsForValue();
         return keys.stream()
                 .map(ops::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
+
     public void removeAllTeamLastReadAtByUserId(Long userId) {
         String pattern = "team_user_inactive:*_" + userId;
         Set<String> keys = activeTeamUserRedisTemplate.keys(pattern);
@@ -166,6 +167,24 @@ public class RedisUtil {
             log.info("No keys found to delete for user {}", userId);
         }
     }
+    public List<ActiveTeamUser> getTeamLastReadAtAll(){
+        String pattern = "team_user_inactive:*_*";
+        Set<String> keys = activeTeamUserRedisTemplate.keys(pattern);
+        ValueOperations<String, ActiveTeamUser> ops = activeTeamUserRedisTemplate.opsForValue();
+        return keys.stream()
+                .map(ops::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+    public void removeAllTeamLastReadAt() {
+        String pattern = "team_user_inactive:*_*";
+        Set<String> keys = activeTeamUserRedisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            activeTeamUserRedisTemplate.delete(keys);
+
+        }
+    }
+
 
 
     public List<Chatting> getMessageListFromRedis(Long teamId) {

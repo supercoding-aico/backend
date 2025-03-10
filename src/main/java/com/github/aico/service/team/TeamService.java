@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,6 +107,48 @@ public class TeamService {
         });
         redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
     }
+//    @Scheduled(fixedRate = 300000)
+//    @Scheduled(fixedRate = 60000) // 1분(60,000ms)
+//    @Transactional
+//    public void activeUserSaveAll(){
+//        List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAtAll();
+//        if (!activeTeamUsers.isEmpty()){
+//            Map<Long, List<ActiveTeamUser>> userActiveMap = activeTeamUsers.stream()
+//                    .collect(Collectors.groupingBy(ActiveTeamUser::getUserId));
+//            for (Map.Entry<Long, List<ActiveTeamUser>> entry : userActiveMap.entrySet()) {
+//                Long userId = entry.getKey();
+//                List<ActiveTeamUser> userActiveTeamUsers = entry.getValue();
+//                User user = userRepository.findById(userId).orElse(null);
+//                if (user != null) {
+//                    saveActiveTeamUsers(user, userActiveTeamUsers);
+//                } else {
+//                    log.warn("User not found for userId: {}", userId);
+//                }
+//            }
+//            redisUtil.removeAllTeamLastReadAt();
+//        }
+//
+//    }
+//    private void saveActiveTeamUsers(User user, List<ActiveTeamUser> activeTeamUsers) {
+//        List<Long> teamIds = activeTeamUsers.stream()
+//                .map(ActiveTeamUser::getTeamId)
+//                .toList();
+//        log.info("teamIds for user {}: {}", user.getUserId(), teamIds);
+//
+//        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user, teamIds);
+//        log.info("teamUserList for user {}: {}", user.getUserId(), teamUserList);
+//
+//        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
+//                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+//
+//        teamUserList.forEach(teamUser -> {
+//            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
+//            if (activeTeamUser != null) {
+//                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
+//            }
+//        });
+//
+//    }
     /**
      * 팀 만들기
      * */
