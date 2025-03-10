@@ -1,5 +1,6 @@
 package com.github.aico.repository.chat;
 
+import com.github.aico.repository.team_user.CustomTeamUserRepository;
 import com.github.aico.repository.team_user.TeamUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat,Long>,CustomChatRepository, QChatRepository {
-
+    @EntityGraph(attributePaths = {"teamUser", "teamUser.user", "teamUser.user.userProfileImage"})
     Page<Chat> findByTeamUserInOrderByCreatedAtMillisDesc(List<TeamUser> teamUsers, Pageable pageable);
 //    @Query("SELECT new com.github.aico.repository.chat.TeamLatestChatTimeDto(c.teamUser.team.teamId, MAX(c.createdAtMillis)) " +
 //            "FROM Chat c WHERE c.teamUser.team.teamId IN :teamIds GROUP BY c.teamUser.team.teamId")

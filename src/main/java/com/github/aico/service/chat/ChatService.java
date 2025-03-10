@@ -26,6 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,21 +43,40 @@ public class ChatService {
 
     @Transactional
     public ResponseDto getTeamChatListResult(User user , Long teamId, Integer page) {
+        log.info("시작");
         List<Chatting> chattings = redisUtil.getMessageListFromRedis(teamId);
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀은 존재하지 않습니다."));
         //채팅 리스트 불러오기 전에 redis에 저장되어 있는 채팅 db에 저장
         if (!chattings.isEmpty()){
-            redisUtil.removeChattingFromRedis(teamId);
+            Set<Long> userIds = chattings.stream().map(Chatting::getUserId).collect(Collectors.toSet());
+            Map<Long, User> userMap = userRepository.findAllByIdIn(userIds).stream()
+                    .collect(Collectors.toMap(User::getUserId, Function.identity()));
+            Map<Long, TeamUser> teamUserMap = teamUserRepository.findByTeamAndUserIdIn(team, userIds).stream()
+                    .collect(Collectors.toMap(tu -> tu.getUser().getUserId(), Function.identity()));
             List<Chat> historyChats = chattings.stream()
                     .map(chat -> {
-                        User findUser = userRepository.findById(chat.getUserId())
-                                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
-                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
-                                .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
+                        User foundUser = userMap.get(chat.getUserId());
+                        if (foundUser == null) {
+                            throw new NotFoundException("유저를 찾을 수 없습니다: " + chat.getUserId());
+                        }
+                        TeamUser teamUser = teamUserMap.get(chat.getUserId());
+                        if (teamUser == null) {
+                            throw new NotFoundException("팀에 해당되지 않은 유저가 있습니다: " + chat.getUserId());
+                        }
                         return Chat.of(chat, teamUser);
                     })
                     .toList();
+            redisUtil.removeChattingFromRedis(teamId);
+//            List<Chat> historyChats = chattings.stream()
+//                    .map(chat -> {
+//                        User findUser = userRepository.findById(chat.getUserId())
+//                                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
+//                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
+//                                .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
+//                        return Chat.of(chat, teamUser);
+//                    })
+//                    .toList();
             chatRepository.saveAllBatch(historyChats);
         }
         boolean exists = teamUserRepository.existsByTeamAndUser(team,user);

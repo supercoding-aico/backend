@@ -89,22 +89,41 @@ public class TeamService {
         return new ResponseDto(HttpStatus.OK.value(),user.getNickname()+"님의 team 조회 성공",myTeamResponse);
     }
     public void activeUserSave(List<ActiveTeamUser> activeTeamUsers,User user){
-        List<Long> teamIds = activeTeamUsers.stream()
-                .map(ActiveTeamUser::getTeamId)
-                .toList();
-        log.info("teamIds: " + teamIds);
-        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user,teamIds);
-        log.info("teamUserList: " + teamUserList);
-        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
-                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+//        List<Long> teamIds = activeTeamUsers.stream()
+//                .map(ActiveTeamUser::getTeamId)
+//                .toList();
+//        log.info("teamIds: " + teamIds);
+//        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user,teamIds);
+//        log.info("teamUserList: " + teamUserList);
+//        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
+//                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+//
+//        // TeamUser 업데이트
+//        teamUserList.forEach(teamUser -> {
+//            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
+//            if (activeTeamUser != null) {
+//                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
+//            }
+//        });
+        Map<Long, LocalDateTime> teamIdToLastReadAt = activeTeamUsers.stream()
+                .filter(atu -> atu.getTeamId() != null && atu.getLastReadAt() != null)
+                .collect(Collectors.toMap(
+                        ActiveTeamUser::getTeamId,
+                        ActiveTeamUser::getLastReadAt,
+                        (existing, replacement) -> existing
+                ));
 
-        // TeamUser 업데이트
-        teamUserList.forEach(teamUser -> {
-            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
-            if (activeTeamUser != null) {
-                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
-            }
-        });
+        if (teamIdToLastReadAt.isEmpty()) {
+            log.warn("No valid ActiveTeamUser data to update for user: {}", user.getUserId());
+            redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
+            return;
+        }
+
+        log.info("teamIdToLastReadAt: {}", teamIdToLastReadAt);
+        teamUserRepository.updateChatReadAtBulk(user.getUserId(), teamIdToLastReadAt);
+
+
+
         redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
     }
 //    @Scheduled(fixedRate = 300000)

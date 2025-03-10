@@ -51,6 +51,7 @@ public class ChattingService {
     @Transactional
     public void roomInactiveUserResult(ActiveTeamUser activeTeamUser) {
         activeTeamUser.saveLastReadAt();
+        log.info(activeTeamUser.getLastReadAt()+ "시간");
         redisUtil.addTeamLastReadAt(activeTeamUser);
 
 //        Team team = teamRepository.findById(activeTeamUser.getTeamId())

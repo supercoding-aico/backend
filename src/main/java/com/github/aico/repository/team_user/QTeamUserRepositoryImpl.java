@@ -1,14 +1,24 @@
 package com.github.aico.repository.team_user;
 
-import com.github.aico.repository.team.QTeam;
+
 import com.github.aico.repository.team.Team;
 import com.github.aico.repository.user.QUser;
+import com.github.aico.repository.user.QUserProfileImage;
+import com.github.aico.repository.user.User;
+
+
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static com.github.aico.repository.team_user.QTeamUser.teamUser;
 
@@ -21,10 +31,12 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
     public List<TeamUser> findTeamUsersByTeamFetchUser(Team team) {
         QTeamUser teamUser = QTeamUser.teamUser;
         QUser user = QUser.user;
+        QUserProfileImage userProfileImage = QUserProfileImage.userProfileImage;
 
 
         return jpaQueryFactory.selectFrom(teamUser)
                 .join(teamUser.user,user).fetchJoin()
+                .join(user.userProfileImage, userProfileImage).fetchJoin()
                 .where(teamUser.team.eq( team))
                 .fetch();
     }
@@ -44,6 +56,10 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
                 .where(teamUser.team.teamId.eq(teamId))
                 .fetch();
     }
+
+
+
+
     @Override
     public List<TeamUser> findByTeamWithLockDsl(Team team) {
         QTeamUser teamUser = QTeamUser.teamUser;
