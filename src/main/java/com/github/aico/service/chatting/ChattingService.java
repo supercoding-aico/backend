@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +35,18 @@ public class ChattingService {
     public void sendChatting(Chatting chatting) {
         chatting.saveCreatedAt();
         redisUtil.addChatting(chatting);
+
         messagingTemplate.convertAndSend("/topic/room/" + chatting.getTeamId(), chatting);
+        List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(chatting.getTeamId());
+        if (!userIds.isEmpty()){
+            for (Long userId : userIds){
+                messagingTemplate.convertAndSend("/topic/toggle/" + userId,true);
+            }
+        }
+
     }
 
-    //유저가 채팅방에서 끊긴 시간
+    //유저가 채팅방에서 끊기고 연결된 시간
     @Transactional
     public void roomInactiveUserResult(ActiveTeamUser activeTeamUser) {
         Team team = teamRepository.findById(activeTeamUser.getTeamId())
@@ -48,6 +57,4 @@ public class ChattingService {
                 .orElseThrow(()-> new NotFoundException("팀유저를 찾을 수 없습니다."));
         teamUser.updateChatReadAt();
     }
-
-
 }

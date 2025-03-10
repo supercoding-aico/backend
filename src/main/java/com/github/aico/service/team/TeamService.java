@@ -1,6 +1,8 @@
 package com.github.aico.service.team;
 
 import com.github.aico.config.security.JwtTokenProvider;
+import com.github.aico.repository.chat.ChatRepository;
+import com.github.aico.repository.chat.TeamLatestChatTimeDto;
 import com.github.aico.repository.team.Team;
 import com.github.aico.repository.team.TeamRepository;
 import com.github.aico.repository.team_user.TeamRole;
@@ -32,7 +34,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +46,7 @@ public class TeamService {
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender sender;
     @Value("${spring.mail.username}")
@@ -50,15 +56,30 @@ public class TeamService {
      * 내 팀 리스트 조회
      * */
     public ResponseDto getMyTeamListResult(User user,Integer page) {
+
         Pageable pageable = PageRequest.of(page,10);
         log.info("N+1테스트 시작");
         // N+1 문제가 발생하여 @EntityGraph 사용
         // TeamUser 조회할 때마다 Team은 항상 필요하므로 @EntityGraph 를 통해 TeamUser 조회 시 Team 함께 가져온다.
         Page<TeamUser> myTeamUser = teamUserRepository.findAllByUser(user,pageable);
         log.info("N+1테스트 끝");
-        Page<Team>  myTeam = myTeamUser.map(TeamUser::getTeam);
+//        Page<Team>  myTeam = myTeamUser.map(TeamUser::getTeam);
+        List<Long> teamIds = redisUtil.getTeamIdByUserId(user.getUserId());
+        log.info("그럼 여기?");
+        redisUtil.saveTeamChatting(user.getUserId());
+        log.info("여기가 시작인가?");
+        List<TeamLatestChatTimeDto> teamLatestChatTimeDtos = chatRepository.findLatestChatTimesByTeamIds(teamIds);
+        log.info("TeamLatestChatTimeDtos: {}", teamLatestChatTimeDtos);
+        Map<Long, LocalDateTime> lastMessageAtMap = teamLatestChatTimeDtos.stream()
+                .collect(Collectors.toMap(TeamLatestChatTimeDto::getTeamId, TeamLatestChatTimeDto::getLatestTime));
+        log.info("LastMessageAtMap: {}", lastMessageAtMap);
 
-        Page<TeamsResponse> myTeamResponse = myTeam.map(TeamsResponse::from);
+        Page<TeamsResponse> myTeamResponse = myTeamUser.map(teamUser -> {
+            Team team = teamUser.getTeam();
+            LocalDateTime lastMessageAt = lastMessageAtMap.getOrDefault(team.getTeamId(), null);
+            return TeamsResponse.of(team, teamUser, lastMessageAt);
+        });
+//        Page<TeamsResponse> myTeamResponse = myTeam.map();
         return new ResponseDto(HttpStatus.OK.value(),user.getNickname()+"님의 team 조회 성공",myTeamResponse);
     }
     /**
@@ -103,6 +124,7 @@ public class TeamService {
         }
 
         teamRepository.deleteTeamById(teamId);
+        redisUtil.invalidateTeamIdsCache(user.getUserId());
         return new ResponseDto(HttpStatus.NO_CONTENT.value(),"삭제 성공");
     }
     /**
@@ -180,6 +202,7 @@ public class TeamService {
             //회원가입은 되어 있고 팀 가입이 필요할 때
             //회원가입도 안되어 있을 때
             getResponse(teamId, tokenEmail, response,inviteToken);
+
         }catch (IOException ioe){
             throw new NotFoundException("잘못된 페이지 요청입니다.");
         }
@@ -335,6 +358,7 @@ public class TeamService {
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(joinTeam, user).orElse(null);
         if (teamUser == null) {
             List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
+
             if (teamUsers.size() >= 10){
                 response.sendRedirect("http://localhost:3000?code=400"); // http://localhost:3000?code=400
                 return;
@@ -342,6 +366,7 @@ public class TeamService {
             TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
             teamUserRepository.save(joinTeamUser);
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
+            redisUtil.invalidateTeamIdsCache(user.getUserId());
             response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }

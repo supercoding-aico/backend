@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static com.github.aico.repository.team_user.QTeamUser.teamUser;
+
 @Repository
 @RequiredArgsConstructor
 public class QTeamUserRepositoryImpl implements QTeamUserRepository {
@@ -24,6 +26,14 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
         return jpaQueryFactory.selectFrom(teamUser)
                 .join(teamUser.user,user).fetchJoin()
                 .where(teamUser.team.eq( team))
+                .fetch();
+    }
+    @Override
+    public List<Long> findTeamIdsByUser(Long userId) {
+        return jpaQueryFactory
+                .select(teamUser.team.teamId)
+                .from(teamUser)
+                .where(teamUser.user.userId.eq(userId))
                 .fetch();
     }
     @Override

@@ -23,9 +23,9 @@ public class ChattingController {
     private final ChattingService chattingService;
     @MessageMapping("/room")
     public void sendChatting(@Payload Chatting chatting) {
-
 //        log.info(principal.getName());
         chattingService.sendChatting(chatting);
+
     }
     @MessageMapping("/room/active")
     public void roomActiveUser(@Payload ActiveTeamUser activeTeamUser) {
@@ -35,5 +35,6 @@ public class ChattingController {
     public void roomInactiveUser(@Payload ActiveTeamUser activeTeamUser) {
         chattingService.roomInactiveUserResult(activeTeamUser);
     }
+
 
 }

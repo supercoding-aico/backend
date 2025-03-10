@@ -222,6 +222,7 @@ public class AuthService {
 
         // 새로운 팀 유저 추가
         TeamUser teamUser = TeamUser.of(joinTeam, saveUser, TeamRole.MEMBER);
+        redisUtil.invalidateTeamIdsCache(saveUser.getUserId());
         teamUserRepository.save(teamUser);
 
     }

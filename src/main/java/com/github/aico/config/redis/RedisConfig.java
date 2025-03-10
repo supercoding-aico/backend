@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -20,7 +21,6 @@ public class RedisConfig {
         objectMapper.registerModule(new JavaTimeModule());
         // Jackson Serializer 설정
         Jackson2JsonRedisSerializer<Chatting> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Chatting.class);
-
         // Serializer 적용
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(serializer);
@@ -28,6 +28,14 @@ public class RedisConfig {
         template.setHashValueSerializer(serializer);
 //        template.setKeySerializer(new StringRedisSerializer());
 //        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Chatting.class));
+        return template;
+    }
+    @Bean
+    public RedisTemplate<String,Long> longRedisTemplate(RedisConnectionFactory connectionFactory){
+        RedisTemplate<String,Long> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
         return template;
     }
 }

@@ -25,6 +25,11 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
 
     List<TeamUser> findAllByUser(User user);
     List<TeamUser> findAllByTeam(Team team);
+//    @Query(" SELECT tu.user.userId FROM TeamUser tu WHERE tu.team.teamId = :teamId ")
+//    List<Long> findTeamUserIdsByTeam(Long teamId);
+
+//    @Query(" SELECT tu.team.teamId FROM TeamUser tu WHERE tu.user.userId = :userId ")
+//    List<Long> findTeamIdsByUser(Long userId);
 //    @Query("SELECT tu FROM TeamUser tu JOIN FETCH tu.user WHERE tu.team = :team")
 //    List<TeamUser> findAllByTeamFetchUser(Team team);
 //    @Lock(LockModeType.PESSIMISTIC_WRITE)

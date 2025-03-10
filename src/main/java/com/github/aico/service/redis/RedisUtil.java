@@ -1,7 +1,17 @@
 package com.github.aico.service.redis;
 
+import com.github.aico.repository.chat.Chat;
+import com.github.aico.repository.chat.ChatRepository;
+import com.github.aico.repository.team.Team;
+import com.github.aico.repository.team.TeamRepository;
+import com.github.aico.repository.team_user.TeamUser;
+import com.github.aico.repository.team_user.TeamUserRepository;
+import com.github.aico.repository.user.User;
+import com.github.aico.repository.user.UserRepository;
+import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.chat.request.Chatting;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -12,12 +22,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisUtil {
     private final StringRedisTemplate redisTemplate;
     private final RedisTemplate<String, Chatting> chattingRedisTemplate;
+    private final RedisTemplate<String,Long> longRedisTemplate;
+    private final TeamUserRepository teamUserRepository;
+    private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
     private final String team = "team";
 
     public String getData(String key){
@@ -54,6 +71,68 @@ public class RedisUtil {
         }
         return allChatting;
     }
+
+//    public List<Long> getUserIdByTeamId(Long teamId){
+//        String key  = "team_user" + teamId;
+//        Set<Long> teamUserIds = longRedisTemplate.opsForSet().members(key);
+//        if (teamUserIds.isEmpty()){
+//            List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(teamId);
+//            longRedisTemplate.opsForSet().add(key,userIds.toArray(new Long[0]));
+//            longRedisTemplate.expire(key,24*60*60, TimeUnit.SECONDS);
+//            return userIds;
+//        }
+//        return teamUserIds.stream().toList();
+//    }
+    public List<Long> getTeamIdByUserId(Long userId){
+        String key = "user_team" + userId;
+
+        Set<Long> teamIds = longRedisTemplate.opsForSet().members(key);
+        log.info("Redis teamIds for user {}: {}", userId, teamIds);
+        if (teamIds.isEmpty()){
+            List<Long> teamIdsByDb = teamUserRepository.findTeamIdsByUser(userId);
+            log.info("DB teamIds for user {}: {}", userId, teamIdsByDb);
+            longRedisTemplate.opsForSet().add(key,teamIdsByDb.toArray(new Long[0]));
+            longRedisTemplate.expire(key,24*60*60,TimeUnit.SECONDS);
+            return teamIdsByDb;
+        }
+        return teamIds.stream().toList();
+    }
+    public void invalidateTeamIdsCache(Long userId) {
+        String key = "user_team" + userId;
+        longRedisTemplate.delete(key);
+        log.info("Invalidated Redis cache for user {}", userId);
+    }
+    public void saveTeamChatting(Long userId) {
+
+        List<Long> teamIds =  getTeamIdByUserId(userId);
+        List<Team> teams = teamRepository.findAllById(teamIds);
+        teams.forEach(dbTeam -> processTeamChatting(dbTeam));
+
+    }
+
+    private void processTeamChatting(Team dbTeam) {
+        Long teamId = dbTeam.getTeamId();
+        List<Chatting> chattings = getMessageListFromRedis(teamId);
+        if (!chattings.isEmpty()) {
+            removeChattingFromRedis(teamId);
+            List<Chat> historyChats = chattings.stream()
+                    .map(chat -> createChat(chat, dbTeam))
+                    .toList();
+            chatRepository.saveAllBatch(historyChats);
+        }
+    }
+
+    private Chat createChat(Chatting chat, Team dbTeam) {
+        User findUser = userRepository.findById(chat.getUserId())
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
+        TeamUser teamUser = teamUserRepository.findByTeamAndUser(dbTeam, findUser)
+                .orElseThrow(() -> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
+        return Chat.of(chat, teamUser);
+    }
+
+
+
+
     public void deleteAllMessage(){
         String pattern = team+"*";
         Set<String> keys = chattingRedisTemplate.keys(pattern);
