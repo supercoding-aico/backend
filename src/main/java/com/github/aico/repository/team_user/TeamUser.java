@@ -35,4 +35,8 @@ public class TeamUser {
                 .build();
     }
 
+    public void updateTeamRole(TeamRole newTeamRole) {
+        this.teamRole = newTeamRole;
+    }
+
 }

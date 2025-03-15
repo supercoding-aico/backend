@@ -21,9 +21,16 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
     Page<TeamUser> findAllByUser(User user, Pageable pageable);
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
-    Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);    boolean existsByTeamAndUser(Team team, User user);
+    Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);
+    boolean existsByTeamAndUser(Team team, User user);
 
-    List<TeamUser> findAllByTeam(Team team);
+    @Query("SELECT COUNT(tu) > 0 FROM TeamUser tu WHERE tu.user = :user AND tu.team.teamId = :teamId AND tu.teamRole = :teamRole")
+    boolean existsByUserAndTeamIdAndTeamRole(@Param("user") User user, @Param("teamId") Long teamId, @Param("teamRole") TeamRole teamRole);
+
+    @Query("SELECT tu FROM TeamUser tu WHERE tu.user = :user AND tu.team.teamId = :teamId")
+    List<TeamUser> findByUserAndTeamId(@Param("user") User user, @Param("teamId") Long teamId);
+
+    List<TeamUser> findAllByTeam(Team team);;
 //    @Query("SELECT tu FROM TeamUser tu JOIN FETCH tu.user WHERE tu.team = :team")
 //    List<TeamUser> findAllByTeamFetchUser(Team team);
 //    @Lock(LockModeType.PESSIMISTIC_WRITE)
