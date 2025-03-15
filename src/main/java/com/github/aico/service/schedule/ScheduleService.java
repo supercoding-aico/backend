@@ -1,5 +1,7 @@
 package com.github.aico.service.schedule;
 
+import com.github.aico.repository.notifications.Notifications;
+import com.github.aico.repository.notifications.NotificationsRepository;
 import com.github.aico.repository.schedule.Schedule;
 import com.github.aico.repository.schedule.ScheduleRepository;
 import com.github.aico.repository.team_user.TeamUser;
@@ -7,14 +9,18 @@ import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
 import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.base.ResponseDto;
+import com.github.aico.web.dto.notification.NotificationResponse;
 import com.github.aico.web.dto.schedule.request.ScheduleRequest;
 import com.github.aico.web.dto.schedule.response.ScheduleResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +28,8 @@ import java.util.stream.Collectors;
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final TeamUserRepository teamUserRepository;
+    private final NotificationsRepository notificationsRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional(readOnly = true)
     public ResponseDto getSchedules(User user, Long teamId, ScheduleRequest request) {
@@ -35,26 +43,63 @@ public class ScheduleService {
     @Transactional
     public ResponseDto createSchedule(User user, Long teamId, ScheduleRequest request) {
         List<TeamUser> teamUsers = teamUserRepository.findAllById(request.getUsers());
-
         Schedule schedule = Schedule.of(request, teamId, teamUsers);
         scheduleRepository.save(schedule);
 
+        TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(teamId, user.getUserId())
+                .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
+
+        Set<TeamUser> allRecipients = new HashSet<>(teamUsers);
+        allRecipients.add(requesterTeamUser);
+
+        allRecipients.forEach(teamUser -> {
+            Notifications notification = Notifications.builder()
+                    .teamUser(teamUser)
+                    .schedule(schedule)
+                    .content("새로운 스케줄이 등록되었습니다: " + request.getContent())
+                    .isRead(false)
+                    .build();
+            notificationsRepository.save(notification);
+
+            messagingTemplate.convertAndSend(
+                    "/topic/notification/" + teamUser.getUser().getUserId(),
+                    new NotificationResponse(notification.getNotificationsId(), "스케줄 등록", request.getContent())
+            );
+        });
+
         return new ResponseDto(HttpStatus.CREATED.value(), "스케줄 등록 성공");
     }
-
 
     @Transactional
     public ResponseDto updateSchedule(User user, Long scheduleId, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다."));
-
         List<TeamUser> teamUsers = teamUserRepository.findAllById(request.getUsers());
-
         schedule.update(request, teamUsers);
+
+        TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(schedule.getTeam().getTeamId(), user.getUserId())
+                .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
+
+        Set<TeamUser> allRecipients = new HashSet<>(teamUsers);
+        allRecipients.add(requesterTeamUser);
+
+        allRecipients.forEach(teamUser -> {
+            Notifications notification = Notifications.builder()
+                    .teamUser(teamUser)
+                    .schedule(schedule)
+                    .content("스케줄이 수정되었습니다: " + request.getContent())
+                    .isRead(false)
+                    .build();
+            notificationsRepository.save(notification);
+
+            messagingTemplate.convertAndSend(
+                    "/topic/notification/" + teamUser.getUser().getUserId(),
+                    new NotificationResponse(notification.getNotificationsId(), "스케줄 수정", request.getContent())
+            );
+        });
 
         return new ResponseDto(HttpStatus.OK.value(), "스케줄 수정 성공");
     }
-
 
     @Transactional
     public ResponseDto deleteSchedule(User user, Long scheduleId) {
