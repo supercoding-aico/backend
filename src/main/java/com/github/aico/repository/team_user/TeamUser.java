@@ -5,6 +5,8 @@ import com.github.aico.repository.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,6 +25,8 @@ public class TeamUser {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
+    @Column(name = "chat_read_at")
+    private LocalDateTime chatReadAt;
     @Enumerated(EnumType.STRING)
     @Column(name = "team_role",nullable = false)
     private TeamRole teamRole;
@@ -32,7 +36,14 @@ public class TeamUser {
                 .team(team)
                 .user(user)
                 .teamRole(teamRole)
+                .chatReadAt(LocalDateTime.now())
                 .build();
+    }
+    public void updateChatReadAt(){
+        this.chatReadAt = LocalDateTime.now();
+    }
+    public void changeChatReadAt(LocalDateTime chatReadAt){
+        this.chatReadAt = chatReadAt;
     }
 
     public void updateTeamRole(TeamRole newTeamRole) {

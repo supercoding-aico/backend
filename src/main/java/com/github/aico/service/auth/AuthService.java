@@ -110,6 +110,7 @@ public class AuthService {
         //팀가입으로 회원가입하는 경우
         if (token !=null){
            joinTeam(token,signUpRequest,saveUser);
+
         }
         return new ResponseDto(HttpStatus.CREATED.value(),user.getNickname()+"님 Ai-Co 회원가입이 완료되었습니다.");
     }
@@ -201,6 +202,7 @@ public class AuthService {
     private void joinTeam(String token, SignUpRequest signUpRequest,User saveUser) {
         String tokenEmail = jwtTokenProvider.getEmail(token);
         Long tokenTeamId = jwtTokenProvider.getTeamId(token);
+        redisUtil.invalidateUsersCache(tokenTeamId);
 
         // Redis에서 이메일로 저장된 데이터가 없거나 이메일이 일치하지 않으면 예외 처리
         if (redisUtil.getData(tokenEmail) == null || !tokenEmail.equals(signUpRequest.getEmail())) {
@@ -209,7 +211,7 @@ public class AuthService {
 
         // 초대 토큰에 대한 데이터 삭제
         redisUtil.deleteData(tokenEmail);
-
+        redisUtil.invalidateUsersCache(tokenTeamId);
         // 팀 ID로 팀 조회
         Team joinTeam = teamRepository.findById(tokenTeamId)
                 .orElseThrow(() -> new NotFoundException("가입하려는 팀이 존재하지 않습니다."));
@@ -222,6 +224,7 @@ public class AuthService {
 
         // 새로운 팀 유저 추가
         TeamUser teamUser = TeamUser.of(joinTeam, saveUser, TeamRole.MEMBER);
+        redisUtil.invalidateTeamIdsCache(saveUser.getUserId());
         teamUserRepository.save(teamUser);
 
     }

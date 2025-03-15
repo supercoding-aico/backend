@@ -25,7 +25,7 @@ public class ChatResponse {
         return ChatResponse.builder()
                 .roomId(chat.getTeamUser().getTeam().getTeamId())
                 .chatId(chat.getChatId())
-                .userInfo(UserInfo.from(chat.getTeamUser().getUser()))
+                .userInfo(UserInfo.of(chat.getTeamUser().getUser(),chat.getTeamUser().getUser().getUserProfileImage().getImageUrl()))
                 .content(chat.getContent())
                 .createdAt(chat.getCreatedAtMillis())
                 .build();

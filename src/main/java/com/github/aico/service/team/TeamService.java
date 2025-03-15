@@ -1,6 +1,8 @@
 package com.github.aico.service.team;
 
 import com.github.aico.config.security.JwtTokenProvider;
+import com.github.aico.repository.chat.ChatRepository;
+import com.github.aico.repository.chat.TeamLatestChatTimeDto;
 import com.github.aico.repository.team.Team;
 import com.github.aico.repository.team.TeamRepository;
 import com.github.aico.repository.team_user.TeamRole;
@@ -13,6 +15,7 @@ import com.github.aico.service.exceptions.BadRequestException;
 import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.web.dto.auth.request.EmailDuplicate;
 import com.github.aico.web.dto.base.ResponseDto;
+import com.github.aico.web.dto.chat.request.ActiveTeamUser;
 import com.github.aico.web.dto.team.request.MakeTeam;
 import com.github.aico.web.dto.team.response.TeamsResponse;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
@@ -28,11 +31,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +48,7 @@ public class TeamService {
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender sender;
     @Value("${spring.mail.username}")
@@ -49,18 +57,116 @@ public class TeamService {
     /**
      * 내 팀 리스트 조회
      * */
+    @Transactional
     public ResponseDto getMyTeamListResult(User user,Integer page) {
+        List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAt(user.getUserId());
+        //유저가 채팅방 나간시간 또는 접속한 시간 저장
+        if (!activeTeamUsers.isEmpty()){
+            activeUserSave(activeTeamUsers,user);
+        }
+
         Pageable pageable = PageRequest.of(page,10);
         log.info("N+1테스트 시작");
         // N+1 문제가 발생하여 @EntityGraph 사용
         // TeamUser 조회할 때마다 Team은 항상 필요하므로 @EntityGraph 를 통해 TeamUser 조회 시 Team 함께 가져온다.
         Page<TeamUser> myTeamUser = teamUserRepository.findAllByUser(user,pageable);
         log.info("N+1테스트 끝");
-        Page<Team>  myTeam = myTeamUser.map(TeamUser::getTeam);
+//        Page<Team>  myTeam = myTeamUser.map(TeamUser::getTeam);
+        List<Long> teamIds = redisUtil.getTeamIdByUserId(user.getUserId());
+        //redis에 저장된 채팅들 db에 저장하기
+        redisUtil.saveTeamChatting(user.getUserId());
+        //팀별로 가장 최근 메시지 시간 가져오기
+        List<TeamLatestChatTimeDto> teamLatestChatTimeDtos = chatRepository.findLatestChatTimesByTeamIds(teamIds);
+        //map으로 변환
+        Map<Long, LocalDateTime> lastMessageAtMap = teamLatestChatTimeDtos.stream()
+                .collect(Collectors.toMap(TeamLatestChatTimeDto::getTeamId, TeamLatestChatTimeDto::getLatestTime));
+        //TeamResponse에 추가
+        Page<TeamsResponse> myTeamResponse = myTeamUser.map(teamUser -> {
+            Team team = teamUser.getTeam();
+            LocalDateTime lastMessageAt = lastMessageAtMap.getOrDefault(team.getTeamId(), null);
+            return TeamsResponse.of(team, teamUser, lastMessageAt);
+        });
 
-        Page<TeamsResponse> myTeamResponse = myTeam.map(TeamsResponse::from);
         return new ResponseDto(HttpStatus.OK.value(),user.getNickname()+"님의 team 조회 성공",myTeamResponse);
     }
+    public void activeUserSave(List<ActiveTeamUser> activeTeamUsers,User user){
+//        List<Long> teamIds = activeTeamUsers.stream()
+//                .map(ActiveTeamUser::getTeamId)
+//                .toList();
+//        log.info("teamIds: " + teamIds);
+//        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user,teamIds);
+//        log.info("teamUserList: " + teamUserList);
+//        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
+//                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+//
+//        // TeamUser 업데이트
+//        teamUserList.forEach(teamUser -> {
+//            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
+//            if (activeTeamUser != null) {
+//                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
+//            }
+//        });
+        Map<Long, LocalDateTime> teamIdToLastReadAt = activeTeamUsers.stream()
+                .filter(atu -> atu.getTeamId() != null && atu.getLastReadAt() != null)
+                .collect(Collectors.toMap(
+                        ActiveTeamUser::getTeamId,
+                        ActiveTeamUser::getLastReadAt,
+                        (existing, replacement) -> existing
+                ));
+
+        if (teamIdToLastReadAt.isEmpty()) {
+            log.warn("No valid ActiveTeamUser data to update for user: {}", user.getUserId());
+            redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
+            return;
+        }
+
+        log.info("teamIdToLastReadAt: {}", teamIdToLastReadAt);
+        teamUserRepository.updateChatReadAtBulk(user.getUserId(), teamIdToLastReadAt);
+
+        redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
+    }
+//    @Scheduled(fixedRate = 300000)
+//    @Scheduled(fixedRate = 60000) // 1분(60,000ms)
+//    @Transactional
+//    public void activeUserSaveAll(){
+//        List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAtAll();
+//        if (!activeTeamUsers.isEmpty()){
+//            Map<Long, List<ActiveTeamUser>> userActiveMap = activeTeamUsers.stream()
+//                    .collect(Collectors.groupingBy(ActiveTeamUser::getUserId));
+//            for (Map.Entry<Long, List<ActiveTeamUser>> entry : userActiveMap.entrySet()) {
+//                Long userId = entry.getKey();
+//                List<ActiveTeamUser> userActiveTeamUsers = entry.getValue();
+//                User user = userRepository.findById(userId).orElse(null);
+//                if (user != null) {
+//                    saveActiveTeamUsers(user, userActiveTeamUsers);
+//                } else {
+//                    log.warn("User not found for userId: {}", userId);
+//                }
+//            }
+//            redisUtil.removeAllTeamLastReadAt();
+//        }
+//
+//    }
+//    private void saveActiveTeamUsers(User user, List<ActiveTeamUser> activeTeamUsers) {
+//        List<Long> teamIds = activeTeamUsers.stream()
+//                .map(ActiveTeamUser::getTeamId)
+//                .toList();
+//        log.info("teamIds for user {}: {}", user.getUserId(), teamIds);
+//
+//        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user, teamIds);
+//        log.info("teamUserList for user {}: {}", user.getUserId(), teamUserList);
+//
+//        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
+//                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+//
+//        teamUserList.forEach(teamUser -> {
+//            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
+//            if (activeTeamUser != null) {
+//                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
+//            }
+//        });
+//
+//    }
     /**
      * 팀 만들기
      * */
@@ -103,6 +209,7 @@ public class TeamService {
         }
 
         teamRepository.deleteTeamById(teamId);
+        redisUtil.invalidateTeamIdsCache(user.getUserId());
         return new ResponseDto(HttpStatus.NO_CONTENT.value(),"삭제 성공");
     }
     /**
@@ -146,6 +253,7 @@ public class TeamService {
         else {
             handleMemberLeave(user, leaveUserId, teamUser);
         }
+        redisUtil.invalidateUsersCache(teamId);
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
 
@@ -180,6 +288,8 @@ public class TeamService {
             //회원가입은 되어 있고 팀 가입이 필요할 때
             //회원가입도 안되어 있을 때
             getResponse(teamId, tokenEmail, response,inviteToken);
+            redisUtil.invalidateUsersCache(teamId);
+
         }catch (IOException ioe){
             throw new NotFoundException("잘못된 페이지 요청입니다.");
         }
@@ -335,6 +445,7 @@ public class TeamService {
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(joinTeam, user).orElse(null);
         if (teamUser == null) {
             List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
+
             if (teamUsers.size() >= 10){
                 response.sendRedirect("http://localhost:3000?code=400"); // http://localhost:3000?code=400
                 return;
@@ -342,6 +453,7 @@ public class TeamService {
             TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
             teamUserRepository.save(joinTeamUser);
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
+            redisUtil.invalidateTeamIdsCache(user.getUserId());
             response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }

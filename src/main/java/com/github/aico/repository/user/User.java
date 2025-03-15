@@ -36,6 +36,8 @@ public class User extends BaseEntity {
     private String profile;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserRole> userRoles;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.LAZY)
+    private UserProfileImage userProfileImage;
 
     public static User from(SignUpRequest signUpRequest) {
         return User.builder()
