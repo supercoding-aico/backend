@@ -24,23 +24,20 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
     List<TeamUser> findByTeamAndUserIdIn(Team team, Collection<Long> user_id);
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
-    Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);    boolean existsByTeamAndUser(Team team, User user);
 
     List<TeamUser> findAllByUser(User user);
     List<TeamUser> findAllByTeam(Team team);
 
-//    @Query(value = "UPDATE team_user tu " +
-//            "SET tu.chat_read_at = :lastReadAt " +
-//            "WHERE tu.user_id = :userId " +
-//            "AND tu.team_id IN :teamIds", nativeQuery = true)
-//    @Modifying
-//    void updateChatReadAtBulk(@Param("userId") Long userId, @Param("teamIds") List<Long> teamIds, @Param("lastReadAt") LocalDateTime lastReadAt);
+    Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);
+    boolean existsByTeamAndUser(Team team, User user);
 
-//    @Query(" SELECT tu.user.userId FROM TeamUser tu WHERE tu.team.teamId = :teamId ")
-//    List<Long> findTeamUserIdsByTeam(Long teamId);
+    @Query("SELECT COUNT(tu) > 0 FROM TeamUser tu WHERE tu.user = :user AND tu.team.teamId = :teamId AND tu.teamRole = :teamRole")
+    boolean existsByUserAndTeamIdAndTeamRole(@Param("user") User user, @Param("teamId") Long teamId, @Param("teamRole") TeamRole teamRole);
 
-//    @Query(" SELECT tu.team.teamId FROM TeamUser tu WHERE tu.user.userId = :userId ")
-//    List<Long> findTeamIdsByUser(Long userId);
+    @Query("SELECT tu FROM TeamUser tu WHERE tu.user = :user AND tu.team.teamId = :teamId")
+    List<TeamUser> findByUserAndTeamId(@Param("user") User user, @Param("teamId") Long teamId);
+
+
 //    @Query("SELECT tu FROM TeamUser tu JOIN FETCH tu.user WHERE tu.team = :team")
 //    List<TeamUser> findAllByTeamFetchUser(Team team);
 //    @Lock(LockModeType.PESSIMISTIC_WRITE)

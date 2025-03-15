@@ -46,4 +46,8 @@ public class TeamUser {
         this.chatReadAt = chatReadAt;
     }
 
+    public void updateTeamRole(TeamRole newTeamRole) {
+        this.teamRole = newTeamRole;
+    }
+
 }
