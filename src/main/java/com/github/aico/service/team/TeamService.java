@@ -60,6 +60,7 @@ public class TeamService {
     @Transactional
     public ResponseDto getMyTeamListResult(User user,Integer page) {
         List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAt(user.getUserId());
+        //유저가 채팅방 나간시간 또는 접속한 시간 저장
         if (!activeTeamUsers.isEmpty()){
             activeUserSave(activeTeamUsers,user);
         }
@@ -121,8 +122,6 @@ public class TeamService {
 
         log.info("teamIdToLastReadAt: {}", teamIdToLastReadAt);
         teamUserRepository.updateChatReadAtBulk(user.getUserId(), teamIdToLastReadAt);
-
-
 
         redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
     }

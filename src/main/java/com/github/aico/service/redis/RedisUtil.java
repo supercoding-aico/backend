@@ -102,7 +102,6 @@ public class RedisUtil {
         longRedisTemplate.delete(key);
     }
     public void saveTeamChatting(Long userId) {
-
         List<Long> teamIds =  getTeamIdByUserId(userId);
         List<Team> teams = teamRepository.findAllById(teamIds);
         teams.forEach(dbTeam -> processTeamChatting(dbTeam));

@@ -52,14 +52,9 @@ public class ChattingService {
     public void roomInactiveUserResult(ActiveTeamUser activeTeamUser) {
         activeTeamUser.saveLastReadAt();
         log.info(activeTeamUser.getLastReadAt()+ "시간");
+        //redis에 저장해두었다가 팀 불러올 때 db에 저장
         redisUtil.addTeamLastReadAt(activeTeamUser);
 
-//        Team team = teamRepository.findById(activeTeamUser.getTeamId())
-//                        .orElseThrow(()-> new NotFoundException("팀을 찾을 수 없습니다."));
-//        User user = userRepository.findById(activeTeamUser.getUserId())
-//                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
-//        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,user)
-//                .orElseThrow(()-> new NotFoundException("팀유저를 찾을 수 없습니다."));
-//        teamUser.updateChatReadAt();
+
     }
 }
