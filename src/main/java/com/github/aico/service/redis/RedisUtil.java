@@ -86,8 +86,12 @@ public class RedisUtil {
         if (teamIds.isEmpty()){
             List<Long> teamIdsByDb = teamUserRepository.findTeamIdsByUser(userId);
 
-            longRedisTemplate.opsForSet().add(key,teamIdsByDb.toArray(new Long[0]));
-            longRedisTemplate.expire(key,24*60*60,TimeUnit.SECONDS);
+            if (!teamIdsByDb.isEmpty()) {
+                longRedisTemplate.opsForSet().add(key, teamIdsByDb.toArray(new Long[0]));
+                longRedisTemplate.expire(key, 24 * 60 * 60, TimeUnit.SECONDS);
+            } else {
+                log.warn("No team IDs found in DB for user {}", userId);
+            }
             return teamIdsByDb;
         }
         return teamIds.stream().toList();
