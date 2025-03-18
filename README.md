@@ -19,14 +19,13 @@
   <summary>📌 목차 </summary>
 
 - [1. 팀원 소개](#1-팀원-소개)  
-- [2. 기술 스택](#2-기술-스택)  
-- [3. 환경변수](#3-환경변수)  
-- [4. System Architecture & ERD](#4-system-architecture--erd)  
-- [5. 기능 전략](#5-기능-전략)  
-- [6. 트러블 슈팅](#6-트러블-슈팅)  
-- [7. Lessons Learned](#7-lessons-learned)  
-- [8. Feedback](#8-feedback)  
-- [9. 느낀점](#9-느낀점)  
+- [2. 기술 스택](#2-기술-스택) 
+- [3. System Architecture & ERD](#3-system-architecture--erd)  
+- [4. 기능 전략](#4-기능-전략)  
+- [5. 트러블 슈팅](#5-트러블-슈팅)  
+- [6. Lessons Learned](#6-lessons-learned)  
+- [7. Feedback](#7-feedback)  
+- [8. 느낀점](#8-느낀점)  
 
 </details>
 <br/>
@@ -44,20 +43,21 @@
 
 ## 2. 기술 스택
 ### [사용 기술]
-### **🛠️ Backend**  
+#### **🛠️ Backend**  
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white) ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white)  
 - **Spring MVC + REST API** : RESTful API 개발  
 - **Spring Security** : 인증 및 권한 관리  
 - **SLF4J** : 애플리케이션 로깅  
 - **Spring Cache** : DB 리소스를 줄이기 위한 캐시 관리  
 - **Spring Schedule** : 스케줄 관리
+- **Spring WebSocket** : 실시간 채팅을 위한 사용
 
-### **💻 Database & Cache**    
+#### **💻 Database & Cache**    
  ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)  
 - **비관적 락(Pessimistic Lock)** : 동시성 제어
 
-### **☁️ DevOps & Deployment**    
+#### **☁️ DevOps & Deployment**    
 ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
@@ -65,7 +65,7 @@
 - **AWS EC2** : 클라우드 서버  
 - **AWS RDS** : 클라우드 DB 관리 
 
-### **📝 Collaboration Tools**  
+#### **📝 Collaboration Tools**  
 ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)  ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white) ![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white) ![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white) 
 
 ### [커밋 컨벤션]
@@ -83,15 +83,7 @@ ci: CI 설정 수정
 ```
 <br/>
 
-## 3. 환경변수
-
-`username` : MySql username  
-`password` : MySql password  
-`secret key` : JWT secretKey
-`api key` : OpenAI secretKey  
-<br/>
-
-## 4. System Architecture & ERD
+## 3. System Architecture & ERD
 ### [System Architecture]
 <img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="700">
 
@@ -100,7 +92,7 @@ ci: CI 설정 수정
 
 <br/>
 
-## 5. 기능 전략
+## 4. 기능 전략
 
 #### 1. Auth
 - ` 로그인 ` :  이메일(아이디), 비밀번호 입력 받아 JWT 및 refresh 토큰 발급 후, HttpOnly 쿠키에 담아서 전달
@@ -151,7 +143,7 @@ ci: CI 설정 수정
 <br/>
 
 
-## 6. 트러블 슈팅
+## 5. 트러블 슈팅
 
 
 | 🔴 error                        | 🔵 문제                                                                 | 🟢 해결 방법                                                               |
@@ -170,7 +162,7 @@ ci: CI 설정 수정
 
 <br/>
 
-## 7. Lessons Learned
+## 6. Lessons Learned
 
 
 ### Lessons
@@ -219,7 +211,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 
 <br/>
 
-## 8. Feedback
+## 7. Feedback
 
 ✔️   
 ✔️   
@@ -228,6 +220,6 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 
 <br/>
 
-## 9. 느낀점
+## 8. 느낀점
 
 
