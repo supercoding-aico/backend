@@ -77,7 +77,6 @@
 - ` 토큰 재발급 ` : 토큰 유효기간이 만료되었을 시 재발급
 - ` 로그아웃 ` : 로그아웃 시 쿠키와 토큰 제거
 
-![Auth-ezgif com-speed](https://github.com/user-attachments/assets/bda44538-811f-4ee2-8649-af4554735491)
 
 
 #### 2. Team
@@ -89,8 +88,7 @@
 - ` 팀 멤버 정보 ` : 팀 아이디를 통해 해당 팀원 정보 조회
 - ` 팀 초대 ` : 이메일 전송을 통해 팀원 초대
 - ` 팀 가입 ` : 초대 링크의 이메일에 해당하는 팀원 가입
-- 
-![product사이즈줄임](https://github.com/user-attachments/assets/1b29e8ff-4bf7-4abe-b9a8-65655f5608d6)
+
 
 #### 3. User
 - ` 자기 프로필 ` : 토큰 받아서 본인 프로필 조회 (프로필 이미지, 닉네임, 이메일, 전화번호)
@@ -99,13 +97,13 @@
 - ` 이미지 변경 ` : 프로필 이미지 변경
 - ` 유저 역할 수정 ` : 팀 역할이 Manager일 경우, 팀원(Member) 역할 수정 가능 / MANAGER 본인 또는 MEMBER는 역할 수정 불가
 
-![party사이즈줄임](https://github.com/user-attachments/assets/c0dd5c02-d49e-49d8-99ba-c08da93c14e5)
+
 
 #### 4. Notification
 - ` 알림 안읽음 리스트 ` : 스케줄 등록 및 수정 관련 안읽음 리스트 조회
 - ` 알림 읽음 처리 ` : 알림 Id에 해당하는 알림 읽음 처리
 
-![myPage-ezgif com-speed](https://github.com/user-attachments/assets/be9b5543-c588-477d-be4f-e88759d037cd)
+
 
 #### 5. Schedule
 - ` 팀 전체 스케줄 조회 ` : 팀 ID를 통해 팀 스케줄 조회
@@ -114,13 +112,11 @@
 - ` 스케줄 삭제 ` : 스케줄 ID에 해당하는 스케줄 삭제
 - ` 자기 스케줄 조회 ` : 팀 ID에 해당하는 본인의 스케줄 조회
 
-![order](https://github.com/user-attachments/assets/0f4e374b-1cd1-474e-953e-53b20e016147)
 
 
 #### 6. Chat
 - ` 채팅방에 대한 채팅 리스트 조회 ` : 팀 ID에 해당하는 채팅리스트를 조회하여 페이지네이션 처리 (시간 역순)
 
-![notification-ezgif com-speed](https://github.com/user-attachments/assets/54e9489a-e543-4ab8-815e-983157bbe00f)
 
 
 #### 7. AI Meeting
