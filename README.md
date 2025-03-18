@@ -44,32 +44,29 @@
 
 ## 2. 기술 스택
 ### [사용 기술]
-📍 Backend  
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white) ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white)
+**🛠️ Backend**
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white) ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white)  
+- **Spring MVC + REST API** : RESTful API 개발  
+- **Spring Security** : 인증 및 권한 관리  
+- **SLF4J** : 애플리케이션 로깅  
+- **Spring Cache** : DB 리소스를 줄이기 위한 캐시 관리  
+- **Spring Schedule** : 스케줄 관리
 
-📍 Database & Cache  
+**💻 Database & Cache**  
  ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
-![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)  
+- **비관적 락(Pessimistic Lock)** : 동시성 제어
 
-📍 DevOps & Deployment  
+**☁️ DevOps & Deployment**  
 ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)  
-` Java 17 ` : 최신 기능과 성능 개선을 위해 사용  
-` Spring Boot `:  REST API 및 웹 애플리케이션 표준  
-` Gradle ` : 프로젝트 관리 및 의존성 관리  
-` MriaDB ` : 관계형 DBMS  
-` JPA(Hibernate) ` : Java와 DB 간의 객체-관계 매핑을 위해 사용  
-` SLF4J `: 애플리케이션 로깅을 위해 사용  
-` Spring MVC + REST API ` : RESTful API 개발  
-` Spring Security ` : 인증 및 권한 관리  
-` Spring Cache ` : DB 리소스를 줄이기 위한 스프링 캐시 생성해서 관리  
-` Spring Schedule` : 스케줄 관리 필요하여 사용  
-` 비관적 락(Pessimistic Lock) ` : 동시성을 위해  
-` AWS EC2 ` : 클라우드 서비스  
-` RDS ` : 클라우드 DB 서버  
-` Git / GitHub ` : 코드 형상 관리  
+- **AWS EC2** : 클라우드 서버  
+- **AWS RDS** : 클라우드 DB 관리 
+
+**📝 Collaboration Tools**
+![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)  ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white) ![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white) ![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white) 
 
 ### [커밋 컨벤션]
 ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
