@@ -29,9 +29,10 @@
 </details>
 <br/>
 
+![작은 토끼 이미지](https://github.com/user-attachments/assets/39b53dec-d2c8-4988-aee2-c8b4b0f35f61)
+<img src="https://github.com/user-attachments/assets/39b53dec-d2c8-4988-aee2-c8b4b0f35f61" width="100">
 
 ## 1. 팀원 소개
-![작은 토끼 이미지](https://github.com/user-attachments/assets/44741a49-ac5f-4d9d-a7fa-d6de744532bd =200x200)
 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
