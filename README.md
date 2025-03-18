@@ -1,6 +1,8 @@
 
 # 📡AiCo Project🤝
 
+<br/><br/>
+
 ## 소개 및 개요
 - 프로젝트 기간 : 2025.02.24 ~ 2025.03.24
 ### [프로젝트 소개]
@@ -39,7 +41,7 @@
 
 ## 2. 기술 스택
 
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) : 최신 기능과 성능 개선을 위해 사용  
+` Java 17 ` : 최신 기능과 성능 개선을 위해 사용  
 ` Spring Boot `:  REST API 및 웹 애플리케이션 표준  
 ` Gradle ` : 프로젝트 관리 및 의존성 관리  
 ` MriaDB ` : 관계형 DBMS  
