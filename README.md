@@ -21,7 +21,7 @@
 - [1. 팀원 소개](#1-팀원-소개)  
 - [2. 기술 스택](#2-기술-스택)  
 - [3. 환경변수](#3-환경변수)  
-- [4. System Architecture & ERD](#4-System-Architecture-&-erd)  
+- [4. System Architecture & ERD](#4-system-architecture--erd)  
 - [5. 기능 전략](#5-기능-전략)  
 - [6. 트러블 슈팅](#6-트러블-슈팅)  
 - [7. Lessons Learned](#7-lessons-learned)  
@@ -83,7 +83,9 @@ ci: CI 설정 수정
 <br/>
 
 ## 4. System Architecture & ERD
+### [System Architecture]
 <img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="700">
+### [ERD]
 <img src="https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949" width="700">
 
 <br/>
