@@ -28,7 +28,7 @@
 
 
 ## 1. 팀원 소개
-==========================
+
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
@@ -36,7 +36,7 @@
 
 
 ## 2. 기술 스택
-----------
+
 ` Java 17+ ` : 최신 기능과 성능 개선을 위해 사용  
 ` Spring Boot `:  REST API 및 웹 애플리케이션 표준  
 ` Gradle ` : 프로젝트 관리 및 의존성 관리  
@@ -54,7 +54,7 @@
 
 
 ## 3. 환경변수
-----------
+
 `username` : MySql username  
 `password` : MySql password  
 `secret key` : JWT secretKey
@@ -62,12 +62,12 @@
 
 
 ## 4. ERD
-----------
+
  
 ![erd](https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949)
 
 ## 5. 기능 전략
-----------
+
 #### 1. Auth
 - ` 로그인 ` :  이메일(아이디), 비밀번호 입력 받아 JWT 및 refresh 토큰 발급 후, HttpOnly 쿠키에 담아서 전달
 - ` 회원가입 ` : 닉네임/이메일 중복확인 후 남은 유저 정보를 입력하여 회원가입을 진행
@@ -132,7 +132,7 @@
 
 
 ## 6. 트러블 슈팅
-----------
+
 
 | 🔴 error                        | 🔵 문제                                                                 | 🟢 해결 방법                                                               |
 |---------------------------------|----------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -149,7 +149,7 @@
 
 
 ## 7. Lessons Learned
-----------
+
 
 ### Lessons
 
@@ -232,7 +232,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 
 
 ## 8. Feedback
-----------
+
 ✔️ setter 사용 X -> 객체 안에 Custom 메소드로 만들어서 사용  
 ✔️ 생성자 of/from 패턴 사용  
 ✔️ 토큰 받아서 유저 조회하는 반복적인 로직 대신 JwtArgumenrResolver 사용  
@@ -240,7 +240,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 
 
 ## 9. 느낀점
-----------
+
 ***협업*** : 프로젝트를 처음 진행하는 과정에서 백엔드와 프론트간 협업 과정이 익숙치 않아 적응하는 시간이 오래 걸렸지만 주기적인 회의를 통해 코드를 리뷰하고 소통함으로써 성공적으로 프로젝트를 마칠 수 있었습니다. 이를 통해 협업에 대한 이해도가 상승하였고 다음 프로젝트에서는 협업을 하면서 겪었던 어려움을 잘 해결할 수 있을 것으로 기대됩니다 🐰
 
 
