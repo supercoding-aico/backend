@@ -14,6 +14,7 @@
 - AI를 활용한 회의 및 채팅 요약 기능으로 채팅 내용이나 회의 기록을 입력하면, AI가 이를 자동으로 정리하여 핵심 내용을 요약해줍니다. 이를 통해 팀원들은 중요한 정보만 빠르게 확인할 수 있어 업무 효율성을 높일 수 있습니다.
 ### [System Architecture]
 ![시스템 아키텍처](https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402)
+<img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="500">
 
 
 <details>
