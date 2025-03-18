@@ -13,15 +13,15 @@
 <details>
   <summary>📌 목차 (클릭해서 펼치기)</summary>
 
-1. [팀원 소개](#팀원 소개)  
-2. [기술 스택](#기술 스택)  
-3. [환경변수](#환경변수)  
-4. [ERD](#ERD)  
-5. [기능 전략](#기능 전략)  
-6. [트러블 슈팅](#트러블 슈팅)  
-7. [Lessons Learned](#Lessons Learned)  
-8. [Feedback](#Feedback)  
-9. [느낀점](#느낀점)   
+- [팀원 소개](#팀원-소개)  
+- [기술 스택](#기술-스택)  
+- [환경변수](#환경변수)  
+- [ERD](#erd)  
+- [기능 전략](#기능-전략)  
+- [트러블 슈팅](#트러블-슈팅)  
+- [Lessons Learned](#lessons-learned)  
+- [Feedback](#feedback)  
+- [느낀점](#느낀점)  
 
 </details>
 
