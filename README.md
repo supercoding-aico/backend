@@ -41,7 +41,7 @@
 <br/><br/>
 
 ## 2. 기술 스택
-#### [사용 기술]
+### [사용 기술]
 ` Java 17 ` : 최신 기능과 성능 개선을 위해 사용  
 ` Spring Boot `:  REST API 및 웹 애플리케이션 표준  
 ` Gradle ` : 프로젝트 관리 및 의존성 관리  
@@ -57,7 +57,7 @@
 ` RDS ` : 클라우드 DB 서버  
 ` Git / GitHub ` : 코드 형상 관리  
 
-#### [커밋 컨벤션]
+### [커밋 컨벤션]
 	![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 ```java
 feat: 새로운 기능을 추가했을 때
