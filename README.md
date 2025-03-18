@@ -31,7 +31,7 @@
 
 
 ## 1. 팀원 소개
-
+![작은 토끼 이미지](https://github.com/user-attachments/assets/44741a49-ac5f-4d9d-a7fa-d6de744532bd =200x200)
 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
