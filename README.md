@@ -12,8 +12,7 @@
 - 일정을 등록하면 팀원들에게 실시간으로 알림이 전송되며, 일정 관리가 더욱 편리해집니다.
 - 팀별 실시간 채팅 기능을 제공하여 원활한 소통을 지원하고, 캘린더를 활용해 등록된 일정을 한눈에 확인하고 공유할 수 있습니다.
 - AI를 활용한 회의 및 채팅 요약 기능으로 채팅 내용이나 회의 기록을 입력하면, AI가 이를 자동으로 정리하여 핵심 내용을 요약해줍니다. 이를 통해 팀원들은 중요한 정보만 빠르게 확인할 수 있어 업무 효율성을 높일 수 있습니다.
-### [System Architecture]
-<img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="700">
+
 
 
 <details>
@@ -22,7 +21,7 @@
 - [1. 팀원 소개](#1-팀원-소개)  
 - [2. 기술 스택](#2-기술-스택)  
 - [3. 환경변수](#3-환경변수)  
-- [4. ERD](#4-erd)  
+- [4. System Architecture & ERD](#4-System-Architecture-&-erd)  
 - [5. 기능 전략](#5-기능-전략)  
 - [6. 트러블 슈팅](#6-트러블-슈팅)  
 - [7. Lessons Learned](#7-lessons-learned)  
@@ -83,8 +82,9 @@ ci: CI 설정 수정
 `api key` : OpenAI secretKey  
 <br/>
 
-## 4. ERD
-![erd](https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949)
+## 4. System Architecture & ERD
+<img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="700">
+<img src="https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949" width="700">
 
 <br/>
 
