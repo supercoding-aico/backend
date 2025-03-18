@@ -141,15 +141,18 @@ ci: CI 설정 수정
 
 | 🔴 error                        | 🔵 문제                                                                 | 🟢 해결 방법                                                               |
 |---------------------------------|----------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `org.hibernate.MappingException`  | BaseEntity를 상속 받는데 BaseEntity와 필드명이 DB 컬럼명과 일치하지 않아 찾을 수 없다는 에러 발생 | 컬럼 명 일치로 해결 완료                                                     |
-| `UnsatisfiedDependencyException`  | 의존성 도입 도중 repository 메소드에 제대로 된 필드 값이 들어오지 않아 발생                  | JpaRepository에 페이지네이션으로 구현했으나 파라미터에 pageable을 넣지 않아 발생했다. pageable을 파라미터로 넣어주어 해결 |
-| `SQLSyntaxErrorException`        | JPQL을 쓰던 중 GroupBy절을 쓰는데 group으로 묶은 필드가 들어오지 않아 발생             | JGroupBy에 필요한 필드들을 담아서 해결 | 
-| `PropertyValueException`        | PartyUser 엔티티는 Party 필드값이 NotNull인데 파티를 먼저 삭제하고 파티 유저를 삭제하려고 하니 파티 유저의 파티 값이 null로 되어 발생                  | 파티유저를 먼저 삭제 후 파티를 삭제하여 해결 | 
-| `N+1`        | @ManyToOne과 @OneToMany 사용 시 조회를 하는 과정에서 한 번의 쿼리문이 아닌 반복적인 쿼리 문 발생                  | 1. 필요한 필드명만 따로 뺀 클래스를 만들어 해결  | 
-|        | Fetch Join을 사용하여 해결                  | 파티유저를 먼저 삭제 후 파티를 삭제하여 해결 | 
-| `cors(Mixed Content)`        | 백엔드가 배포한 프로젝트에서 프론트 배포 주소 허용 안해서 발생                  | 프론트 요청 주소 허용해주는 config 빈으로 등록 후 SecutiryConfig에 추가하여 해결 | 
-| `동시성 문제`        | 파티 등록할 때 여러 사람이 동시에 파티에 참여할 때 참여 가능한 인원수보다 오바되는 경우 발생              | 파티를 조회할 때 낙관적 락을 걸어 처리가 끝난 후에 다음 조회 처리가 가능하도록 하여 해결 |
-|         | 한 사람이 여러 파티에 동시에 가입할 때 돈이 한 파티에 관해서만 빠지는 현상 발생                  | 유저의 돈을 업데이트 할 때 db에서 처리하도록 UserRepository에서 update문을 넣어주어 실행하도록 변경하여 해결 |
+| `Filter에서 발생한 예외처리`  | 토큰이 만료되었을 때는 filter에서 예외처리가 발생하는데 해당 예외처리는 ControllerAdvice에서 동작을 하지 않아 클라이언트에게는 500이 발생  | CustomException을 만들어서 Filter에서 예외처리 메시지를 출력하도록 하여 해결                                                    |
+| `webSocket https시 접속 불가능한 error`  | https로 배포시 webSocket 연결이 안 되는 문제  | Nginx 파일에 webSocket에 해당하는 url도 proxyPass로 추가해주어 해결                                  |
+| `webSocket 연결이 아무나 가능한 error`  | webSocket연결 시 회원이 아니어도 접속이 가능한 문제  | webSocket 연결 전에 쿠키 안에 있는 토큰을 검증하고 websocket 연결할 수 있는 handShake추가                                  |
+| `webSocket을 통한 DB 전송 시 db부하`  | webSocket을 통한 전송은 매우 가벼우므로 채팅 같은데 유용하다 그래서 메시지 하나당 db를 타는 것은 일부 메시지는손실되는 문제  | 메시지를 키 값으로 redis에 저장하여 @Schedule을 통해 일정 시간만큼 한 번에 저장하거나 채팅 리스트 불러올 때 redis에 있는 메시지 저장                                  |
+| `S3 서버 client에서 사용시 denied error 발생`  | client가 S3 이미지 접근 시도 시 접근 불가 문제  | S3서버에서 해당 client 요청에 대한 것은 허용하여 해결                                 |
+                                 |
+| `N+1`  | TeamUser를 조회하는 과정에서 유저가 포함되어 있는 Team 수만큼 select 진행 | TeamUser 조회할 때 항상 Team이 필요하므로 @EntityGraph를 통해 Team도 한 번에 조회                                                    |
+| `saveAll`  | 메시지를 한 번에 저장할 때 메시지 개수만큼 insert문이 실행되는 문제  | saveAll은 save의 for문 동작만 생략한 것이지 내부적으로 for문을 돌고 있다는 것을 알게되었다. 그래서 jdbcTemplate를 사용해 Batch개수만큼 한 번에 insert하는 걸로 바꾸었다. 
+| `동시성 문제 발생`  | 팀 탈퇴 시 역할이 Manger이면서 Manger 한 명일 때는 본인 탈퇴가 불가능하다 하지만 두명의 Manager가 동시에 탈퇴를 누르면 탈퇴가 진헹되는 문제가 있다.                  | Select해올 때 persimisitc Lock을 사용하여 다음 요청은 이전 요청이 끝나면 들어오도록 하여 해결 |
+| `  | 팀당 참여인원이 10명으로 제한이므로 9명일 때 동시에 초대를 하면 초대가 가능한 문제 발생                 | 멤버를 조회할 때 persimisitc Lock을 사용하여 해결 |
+| `Cors에러`        | 백엔드 배포 주소가 https여서 프론트가 로컬에서 http로 접속 시 에러 발생             | corsConfig에 프론트 로컬 주소도 허용하여 해결 | 
+
 
 <br/>
 
