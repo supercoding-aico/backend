@@ -1,22 +1,38 @@
 
-# AiCo Project
+# 📡AiCo Project🤝
 
-# FarmPlus Web Project
-### 팀원 소개
-----------
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
-| :--------------- | :--------------- | 
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
-
-
-
-### 1. 프로젝트 소개
+## 소개 및 개요
+- 프로젝트 기간 : 2025.02.24 ~ 2025.03.24
+### [프로젝트 소개]
 ----------
 - 본 프로젝트는 협업 툴 프로젝트로 개발 일정과 업무를 체계적으로 등록하고 공유할 수 있으며, 실시간 알림과 채팅 기능을 활용해 원활한 커뮤니케이션이 가능합니다.
 - 일정을 등록하면 팀원들에게 실시간으로 알림이 전송되며, 일정 관리가 더욱 편리해집니다.
 - 팀별 실시간 채팅 기능을 제공하여 원활한 소통을 지원하고, 캘린더를 활용해 등록된 일정을 한눈에 확인하고 공유할 수 있습니다.
 - AI를 활용한 회의 및 채팅 요약 기능으로 채팅 내용이나 회의 기록을 입력하면, AI가 이를 자동으로 정리하여 핵심 내용을 요약해줍니다. 이를 통해 팀원들은 중요한 정보만 빠르게 확인할 수 있어 업무 효율성을 높일 수 있습니다.
- 
+
+<details>
+  <summary>📌 목차 (클릭해서 펼치기)</summary>
+
+1. [팀원 소개](#팀원 소개)  
+2. [기술 스택](#기술 스택)  
+3. [환경변수](#환경변수)  
+4. [ERD](#ERD)  
+5. [기능 전략](#기능 전략)  
+6. [트러블 슈팅](#트러블 슈팅)  
+7. [Lessons Learned](#Lessons Learned)  
+8. [Feedback](#Feedback)  
+9. [느낀점](#느낀점)   
+
+</details>
+
+### 1. 팀원 소개
+----------
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
+| :--------------- | :--------------- | 
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
+| :--------------- | :--------------- | 
+| [🖥️ Backend]  | [🖥️ Backend]  | 
+
 
 ### 2. 기술 스택
 ----------
@@ -222,7 +238,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 ✔️ Lock 많이 사용 시 성능 저하 또는 데드락 발생이 있으므로 decrease같이 업데이트 문 직접 사용  
 
 
-### 9. 회고
+### 9. 느낀점
 ----------
 ***협업*** : 프로젝트를 처음 진행하는 과정에서 백엔드와 프론트간 협업 과정이 익숙치 않아 적응하는 시간이 오래 걸렸지만 주기적인 회의를 통해 코드를 리뷰하고 소통함으로써 성공적으로 프로젝트를 마칠 수 있었습니다. 이를 통해 협업에 대한 이해도가 상승하였고 다음 프로젝트에서는 협업을 하면서 겪었던 어려움을 잘 해결할 수 있을 것으로 기대됩니다 🐰
 
