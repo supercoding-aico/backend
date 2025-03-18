@@ -146,7 +146,6 @@ ci: CI 설정 수정
 | `webSocket 연결이 아무나 가능한 error`  | webSocket연결 시 회원이 아니어도 접속이 가능한 문제  | webSocket 연결 전에 쿠키 안에 있는 토큰을 검증하고 websocket 연결할 수 있는 handShake추가                                  |
 | `webSocket을 통한 DB 전송 시 db부하`  | webSocket을 통한 전송은 매우 가벼우므로 채팅 같은데 유용하다 그래서 메시지 하나당 db를 타는 것은 일부 메시지는손실되는 문제  | 메시지를 키 값으로 redis에 저장하여 @Schedule을 통해 일정 시간만큼 한 번에 저장하거나 채팅 리스트 불러올 때 redis에 있는 메시지 저장                                  |
 | `S3 서버 client에서 사용시 denied error 발생`  | client가 S3 이미지 접근 시도 시 접근 불가 문제  | S3서버에서 해당 client 요청에 대한 것은 허용하여 해결                                 |
-                                 |
 | `N+1`  | TeamUser를 조회하는 과정에서 유저가 포함되어 있는 Team 수만큼 select 진행 | TeamUser 조회할 때 항상 Team이 필요하므로 @EntityGraph를 통해 Team도 한 번에 조회                                                    |
 | `saveAll`  | 메시지를 한 번에 저장할 때 메시지 개수만큼 insert문이 실행되는 문제  | saveAll은 save의 for문 동작만 생략한 것이지 내부적으로 for문을 돌고 있다는 것을 알게되었다. 그래서 jdbcTemplate를 사용해 Batch개수만큼 한 번에 insert하는 걸로 바꾸었다. 
 | `동시성 문제 발생`  | 팀 탈퇴 시 역할이 Manger이면서 Manger 한 명일 때는 본인 탈퇴가 불가능하다 하지만 두명의 Manager가 동시에 탈퇴를 누르면 탈퇴가 진헹되는 문제가 있다.                  | Select해올 때 persimisitc Lock을 사용하여 다음 요청은 이전 요청이 끝나면 들어오도록 하여 해결 |
