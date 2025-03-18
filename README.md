@@ -58,7 +58,8 @@
 ` Git / GitHub ` : 코드 형상 관리  
 
 ### [커밋 컨벤션]
-	![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+
 ```java
 feat: 새로운 기능을 추가했을 때
 fix: 버그를 수정했을 때
