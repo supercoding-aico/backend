@@ -29,11 +29,12 @@
 </details>
 <br/>
 
+![토끼 이미지](https://github.com/user-attachments/assets/9e2f22a2-e1bc-419c-b5ae-7dbae42c9630)
 
 
 ## 1. 팀원 소개
 
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진<img src="https://github.com/user-attachments/assets/9e2f22a2-e1bc-419c-b5ae-7dbae42c9630" width="40">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
 | &nbsp;&nbsp;&nbsp;&nbsp;🖥️ Backend  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🖥️ Backend  | 
