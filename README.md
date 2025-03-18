@@ -38,7 +38,7 @@
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
 | &nbsp;&nbsp;&nbsp;&nbsp;🖥️ Backend  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🖥️ Backend  | 
 
-<br/><br/>
+<br/>
 
 ## 2. 기술 스택
 ### [사용 기술]
@@ -70,7 +70,7 @@ test: 테스트 코드 추가, 수정
 build: 빌드 시스템이나 외부 의존성 변경할 때
 ci: CI 설정 수정
 ```
-<br/><br/>
+<br/>
 
 ## 3. 환경변수
 
@@ -78,12 +78,12 @@ ci: CI 설정 수정
 `password` : MySql password  
 `secret key` : JWT secretKey
 `api key` : OpenAI secretKey  
-<br/><br/>
+<br/>
 
 ## 4. ERD
 ![erd](https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949)
 
-<br/><br/>
+<br/>
 
 ## 5. 기능 전략
 
@@ -133,7 +133,7 @@ ci: CI 설정 수정
 - ` 회의록 삭제 ` : 미팅 ID에 해당하는 회의록 삭제
 - ` 회의록 수정 ` : 미팅 ID에 해당하는 회의록 내용 수정
 
-<br/><br/>
+<br/>
 
 
 ## 6. 트러블 슈팅
@@ -151,7 +151,7 @@ ci: CI 설정 수정
 | `동시성 문제`        | 파티 등록할 때 여러 사람이 동시에 파티에 참여할 때 참여 가능한 인원수보다 오바되는 경우 발생              | 파티를 조회할 때 낙관적 락을 걸어 처리가 끝난 후에 다음 조회 처리가 가능하도록 하여 해결 |
 |         | 한 사람이 여러 파티에 동시에 가입할 때 돈이 한 파티에 관해서만 빠지는 현상 발생                  | 유저의 돈을 업데이트 할 때 db에서 처리하도록 UserRepository에서 update문을 넣어주어 실행하도록 변경하여 해결 |
 
-<br/><br/>
+<br/>
 
 ## 7. Lessons Learned
 
@@ -235,7 +235,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 #### *AWS EC2 배포*
 이전 프로젝트에서는 AWS EC2를 사용해 서버를 배포하는 과정에서 여러 가지 문제에 부딪혔습니다. 특히, 서버 설정과 배포 후 운영에 어려움이 있었지만, 팀원이 EC2 배포 과정을 깔끔하게 처리한 코드를 보면서 많은 것을 배웠습니다.  다음 프로젝트에서는 AWS EC2를 사용해 직접 배포하고 운영하는 경험을 쌓아볼 계획입니다 추가로 매번 코드가 수정되면 재배포를 진행했어야 했는데 다음 프로젝트에서는 지속적인 통합(CI) 지속적인 배포(CD)도 적용해 볼 것입니다.
 
-<br/><br/>
+<br/>
 
 ## 8. Feedback
 
@@ -244,7 +244,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 ✔️ 토큰 받아서 유저 조회하는 반복적인 로직 대신 JwtArgumenrResolver 사용  
 ✔️ Lock 많이 사용 시 성능 저하 또는 데드락 발생이 있으므로 decrease같이 업데이트 문 직접 사용  
 
-<br/><br/>
+<br/>
 
 ## 9. 느낀점
 
