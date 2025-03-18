@@ -28,7 +28,7 @@
 
 
 ## 1. 팀원 소개
-
+==========================
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
@@ -63,7 +63,6 @@
 
 ## 4. ERD
 ----------
-![image](https://www.)
  
 ![erd](https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949)
 
