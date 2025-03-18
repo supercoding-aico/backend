@@ -28,7 +28,7 @@
 
 
 ## 1. 팀원 소개
-<br/>
+
 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
@@ -39,7 +39,7 @@
 
 ## 2. 기술 스택
 
-` Java 17+ ` : 최신 기능과 성능 개선을 위해 사용  
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) : 최신 기능과 성능 개선을 위해 사용  
 ` Spring Boot `:  REST API 및 웹 애플리케이션 표준  
 ` Gradle ` : 프로젝트 관리 및 의존성 관리  
 ` MriaDB ` : 관계형 DBMS  
@@ -53,7 +53,7 @@
 ` AWS EC2 ` : 클라우드 서비스  
 ` RDS ` : 클라우드 DB 서버  
 ` Git / GitHub ` : 코드 형상 관리  
-
+<br/><br/>
 
 ## 3. 환경변수
 
@@ -61,12 +61,12 @@
 `password` : MySql password  
 `secret key` : JWT secretKey
 `api key` : OpenAI secretKey  
-
+<br/><br/>
 
 ## 4. ERD
-
- 
 ![erd](https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949)
+
+<br/><br/>
 
 ## 5. 기능 전략
 
@@ -79,8 +79,6 @@
 - ` 토큰 재발급 ` : 토큰 유효기간이 만료되었을 시 재발급
 - ` 로그아웃 ` : 로그아웃 시 쿠키와 토큰 제거
 
-
-
 #### 2. Team
 - ` 팀 생성 ` : 협업 툴에 필요한 팀 생성
 - ` 팀 수정 ` : 팀에 대한 내용 변경
@@ -91,7 +89,6 @@
 - ` 팀 초대 ` : 이메일 전송을 통해 팀원 초대
 - ` 팀 가입 ` : 초대 링크의 이메일에 해당하는 팀원 가입
 
-
 #### 3. User
 - ` 자기 프로필 ` : 토큰 받아서 본인 프로필 조회 (프로필 이미지, 닉네임, 이메일, 전화번호)
 - ` 프로필 수정 ` : 본인 프로필 내용 변경
@@ -99,13 +96,9 @@
 - ` 이미지 변경 ` : 프로필 이미지 변경
 - ` 유저 역할 수정 ` : 팀 역할이 Manager일 경우, 팀원(Member) 역할 수정 가능 / MANAGER 본인 또는 MEMBER는 역할 수정 불가
 
-
-
 #### 4. Notification
 - ` 알림 안읽음 리스트 ` : 스케줄 등록 및 수정 관련 안읽음 리스트 조회
 - ` 알림 읽음 처리 ` : 알림 Id에 해당하는 알림 읽음 처리
-
-
 
 #### 5. Schedule
 - ` 팀 전체 스케줄 조회 ` : 팀 ID를 통해 팀 스케줄 조회
@@ -114,12 +107,8 @@
 - ` 스케줄 삭제 ` : 스케줄 ID에 해당하는 스케줄 삭제
 - ` 자기 스케줄 조회 ` : 팀 ID에 해당하는 본인의 스케줄 조회
 
-
-
 #### 6. Chat
 - ` 채팅방에 대한 채팅 리스트 조회 ` : 팀 ID에 해당하는 채팅리스트를 조회하여 페이지네이션 처리 (시간 역순)
-
-
 
 #### 7. AI Meeting
 - ` 회의록 정리 ` : 팀 ID에 해당하는 회의록 내용을 받아 OpenAI 답변 받기
@@ -127,6 +116,7 @@
 - ` 회의록 삭제 ` : 미팅 ID에 해당하는 회의록 삭제
 - ` 회의록 수정 ` : 미팅 ID에 해당하는 회의록 내용 수정
 
+<br/><br/>
 
 
 ## 6. 트러블 슈팅
@@ -144,7 +134,7 @@
 | `동시성 문제`        | 파티 등록할 때 여러 사람이 동시에 파티에 참여할 때 참여 가능한 인원수보다 오바되는 경우 발생              | 파티를 조회할 때 낙관적 락을 걸어 처리가 끝난 후에 다음 조회 처리가 가능하도록 하여 해결 |
 |         | 한 사람이 여러 파티에 동시에 가입할 때 돈이 한 파티에 관해서만 빠지는 현상 발생                  | 유저의 돈을 업데이트 할 때 db에서 처리하도록 UserRepository에서 update문을 넣어주어 실행하도록 변경하여 해결 |
 
-
+<br/><br/>
 
 ## 7. Lessons Learned
 
@@ -228,6 +218,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 #### *AWS EC2 배포*
 이전 프로젝트에서는 AWS EC2를 사용해 서버를 배포하는 과정에서 여러 가지 문제에 부딪혔습니다. 특히, 서버 설정과 배포 후 운영에 어려움이 있었지만, 팀원이 EC2 배포 과정을 깔끔하게 처리한 코드를 보면서 많은 것을 배웠습니다.  다음 프로젝트에서는 AWS EC2를 사용해 직접 배포하고 운영하는 경험을 쌓아볼 계획입니다 추가로 매번 코드가 수정되면 재배포를 진행했어야 했는데 다음 프로젝트에서는 지속적인 통합(CI) 지속적인 배포(CD)도 적용해 볼 것입니다.
 
+<br/><br/>
 
 ## 8. Feedback
 
@@ -236,6 +227,7 @@ int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
 ✔️ 토큰 받아서 유저 조회하는 반복적인 로직 대신 JwtArgumenrResolver 사용  
 ✔️ Lock 많이 사용 시 성능 저하 또는 데드락 발생이 있으므로 decrease같이 업데이트 문 직접 사용  
 
+<br/><br/>
 
 ## 9. 느낀점
 
