@@ -87,6 +87,7 @@ ci: CI 설정 수정
 ## 3. System Architecture & ERD
 ### [System Architecture]
 <img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="700">  
+
 #### ❗ 채팅 처리  
 <img src="https://github.com/user-attachments/assets/57a1148b-d38e-44ec-b157-55b306ac1b33" width="500">
 
