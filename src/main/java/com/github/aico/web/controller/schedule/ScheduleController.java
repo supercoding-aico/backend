@@ -6,8 +6,9 @@ import com.github.aico.service.schedule.ScheduleService;
 import com.github.aico.repository.user.JwtUser;
 import com.github.aico.repository.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/schedule")
@@ -16,8 +17,10 @@ public class ScheduleController {
     private final ScheduleService scheduleService;
 
     @GetMapping("/{teamId}")
-    public ResponseDto getSchedules(@JwtUser User user, @PathVariable Long teamId, @RequestBody ScheduleRequest request) {
-        return scheduleService.getSchedules(user, teamId, request);
+    public ResponseDto getSchedules(@JwtUser User user, @PathVariable Long teamId,
+                                    @RequestParam("startDate") LocalDate startDate,
+                                    @RequestParam("endDate") LocalDate endDate) {
+        return scheduleService.getSchedules(user, teamId, startDate, endDate);
     }
 
     @PostMapping("/{teamId}")
