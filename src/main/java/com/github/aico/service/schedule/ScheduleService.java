@@ -18,6 +18,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,8 +33,8 @@ public class ScheduleService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional(readOnly = true)
-    public ResponseDto getSchedules(User user, Long teamId, ScheduleRequest request) {
-        List<ScheduleResponse> schedules = scheduleRepository.findByTeamIdAndDateRange(teamId, request.getStartDate(), request.getEndDate())
+    public ResponseDto getSchedules(User user, Long teamId, LocalDate startDate, LocalDate endDate) {
+        List<ScheduleResponse> schedules = scheduleRepository.findByTeamIdAndDateRange(teamId, startDate, endDate)
                 .stream()
                 .map(ScheduleResponse::from)
                 .collect(Collectors.toList());
@@ -76,6 +77,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다."));
         List<TeamUser> teamUsers = teamUserRepository.findAllById(request.getUsers());
         schedule.update(request, teamUsers);
+        scheduleRepository.save(schedule); // 명시적 저장 추가 (필요 시)
 
         TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(schedule.getTeam().getTeamId(), user.getUserId())
                 .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
