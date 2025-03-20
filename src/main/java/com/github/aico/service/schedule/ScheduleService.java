@@ -4,6 +4,8 @@ import com.github.aico.repository.notifications.Notifications;
 import com.github.aico.repository.notifications.NotificationsRepository;
 import com.github.aico.repository.schedule.Schedule;
 import com.github.aico.repository.schedule.ScheduleRepository;
+import com.github.aico.repository.team.Team;
+import com.github.aico.repository.team.TeamRepository;
 import com.github.aico.repository.team_user.TeamUser;
 import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
@@ -13,6 +15,7 @@ import com.github.aico.web.dto.notification.NotificationResponse;
 import com.github.aico.web.dto.schedule.request.ScheduleRequest;
 import com.github.aico.web.dto.schedule.response.ScheduleResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -26,11 +29,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final TeamUserRepository teamUserRepository;
     private final NotificationsRepository notificationsRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final TeamRepository teamRepository;
 
     @Transactional(readOnly = true)
     public ResponseDto getSchedules(User user, Long teamId, LocalDate startDate, LocalDate endDate) {
@@ -44,13 +49,16 @@ public class ScheduleService {
     @Transactional
     public ResponseDto createSchedule(User user, Long teamId, ScheduleRequest request) {
         List<TeamUser> teamUsers = teamUserRepository.findAllById(request.getUsers());
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NotFoundException("TeamId를 찾을 수 없습니다."));
+        List<TeamUser> teamUserList = teamUserRepository.findAllByTeam(team);
         Schedule schedule = Schedule.of(request, teamId, teamUsers);
         scheduleRepository.save(schedule);
 
         TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(teamId, user.getUserId())
                 .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
 
-        Set<TeamUser> allRecipients = new HashSet<>(teamUsers);
+        Set<TeamUser> allRecipients = new HashSet<>(teamUserList);
         allRecipients.add(requesterTeamUser);
 
         allRecipients.forEach(teamUser -> {
@@ -61,6 +69,8 @@ public class ScheduleService {
                     .isRead(false)
                     .build();
             notificationsRepository.save(notification);
+
+            log.info(teamUser.getUser().getUserId()+"");
 
             messagingTemplate.convertAndSend(
                     "/topic/notification/" + teamUser.getUser().getUserId(),
