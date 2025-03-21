@@ -4,7 +4,8 @@
 <br/><br/>
 
 ## 소개 및 개요
-- 프로젝트 기간 : 2025.02.24 ~ 2025.03.24
+- 프로젝트 기간 : 2025.02.24 ~ 2025.03.21
+- 인원 : 백엔드 2명, 프론트 2명
 
 
 ### [프로젝트 소개]
@@ -13,27 +14,27 @@
 - 팀별 실시간 채팅 기능을 제공하여 원활한 소통을 지원하고, 캘린더를 활용해 등록된 일정을 한눈에 확인하고 공유할 수 있습니다.
 - AI를 활용한 회의 및 채팅 요약 기능으로 채팅 내용이나 회의 기록을 입력하면, AI가 이를 자동으로 정리하여 핵심 내용을 요약해줍니다. 이를 통해 팀원들은 중요한 정보만 빠르게 확인할 수 있어 업무 효율성을 높일 수 있습니다.
 
+
+
 <details>
   <summary>📌 목차 </summary>
 
 - [1. 팀원 소개](#1-팀원-소개)  
-- [2. 기술 스택](#2-기술-스택)  
-- [3. 환경변수](#3-환경변수)  
-- [4. ERD](#4-erd)  
-- [5. 기능 전략](#5-기능-전략)  
-- [6. 트러블 슈팅](#6-트러블-슈팅)  
-- [7. Lessons Learned](#7-lessons-learned)  
-- [8. Feedback](#8-feedback)  
-- [9. 느낀점](#9-느낀점)  
+- [2. 기술 스택](#2-기술-스택) 
+- [3. System Architecture & ERD](#3-system-architecture--erd)  
+- [4. 기능 전략](#4-기능-전략)  
+- [5. 트러블 슈팅](#5-트러블-슈팅)  
+- [6. Lessons Learned](#6-lessons-learned)    
+- [7. 느낀점](#7-느낀점)  
 
 </details>
 <br/>
 
 
+
 ## 1. 팀원 소개
 
-
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한유진🐰&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 임홍현😺 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | 
 | :--------------- | :--------------- | 
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@yj267](https://github.com/yj267) | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[@limhhyeon](https://github.com/limhhyeon) 
 | &nbsp;&nbsp;&nbsp;&nbsp;🖥️ Backend  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🖥️ Backend  | 
@@ -42,20 +43,31 @@
 
 ## 2. 기술 스택
 ### [사용 기술]
-` Java 17 ` : 최신 기능과 성능 개선을 위해 사용  
-` Spring Boot `:  REST API 및 웹 애플리케이션 표준  
-` Gradle ` : 프로젝트 관리 및 의존성 관리  
-` MriaDB ` : 관계형 DBMS  
-` JPA(Hibernate) ` : Java와 DB 간의 객체-관계 매핑을 위해 사용  
-` SLF4J `: 애플리케이션 로깅을 위해 사용  
-` Spring MVC + REST API ` : RESTful API 개발  
-` Spring Security ` : 인증 및 권한 관리  
-` Spring Cache ` : DB 리소스를 줄이기 위한 스프링 캐시 생성해서 관리  
-` Spring Schedule` : 스케줄 관리 필요하여 사용  
-` 비관적 락(Pessimistic Lock) ` : 동시성을 위해  
-` AWS EC2 ` : 클라우드 서비스  
-` RDS ` : 클라우드 DB 서버  
-` Git / GitHub ` : 코드 형상 관리  
+#### **🛠️ Backend**  
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white) ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white)  
+- **Spring MVC + REST API** : RESTful API 개발  
+- **Spring Security** : 인증 및 권한 관리  
+- **SLF4J** : 애플리케이션 로깅  
+- **Spring Cache** : DB 리소스를 줄이기 위한 캐시 관리  
+- **Spring Schedule** : 스케줄 관리
+- **WebSocket + STOMP** : 실시간 알림 및 채팅 
+
+#### **💻 Database & Cache**    
+ ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)  
+- **비관적 락(Pessimistic Lock)** : 동시성 제어
+
+#### **☁️ DevOps & Deployment**    
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)  
+- **AWS EC2** : 클라우드 서버  
+- **AWS RDS(MariaDB)** : 클라우드 DB 관리
+- **AWS S3** : 파일, 이미지 관리  
+
+#### **📝 Collaboration Tools**  
+![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)  ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white) ![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white) ![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white) 
 
 ### [커밋 컨벤션]
 ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
@@ -72,20 +84,20 @@ ci: CI 설정 수정
 ```
 <br/>
 
-## 3. 환경변수
+## 3. System Architecture & ERD
+### [System Architecture]
+<img src="https://github.com/user-attachments/assets/b0c6937f-c09c-402a-8cb1-254354f8c402" width="700">  
 
-`username` : MySql username  
-`password` : MySql password  
-`secret key` : JWT secretKey
-`api key` : OpenAI secretKey  
+#### ❗ 채팅 처리  
+<img src="https://github.com/user-attachments/assets/57a1148b-d38e-44ec-b157-55b306ac1b33" width="500">
+
+
+### [ERD]
+<img src="https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949" width="700">
+
 <br/>
 
-## 4. ERD
-![erd](https://github.com/user-attachments/assets/e041519f-27c6-4efa-ba22-3d3d200a6949)
-
-<br/>
-
-## 5. 기능 전략
+## 4. 기능 전략
 
 #### 1. Auth
 - ` 로그인 ` :  이메일(아이디), 비밀번호 입력 받아 JWT 및 refresh 토큰 발급 후, HttpOnly 쿠키에 담아서 전달
@@ -136,81 +148,123 @@ ci: CI 설정 수정
 <br/>
 
 
-## 6. 트러블 슈팅
+## 5. 트러블 슈팅
 
 
 | 🔴 error                        | 🔵 문제                                                                 | 🟢 해결 방법                                                               |
 |---------------------------------|----------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `org.hibernate.MappingException`  | BaseEntity를 상속 받는데 BaseEntity와 필드명이 DB 컬럼명과 일치하지 않아 찾을 수 없다는 에러 발생 | 컬럼 명 일치로 해결 완료                                                     |
-| `UnsatisfiedDependencyException`  | 의존성 도입 도중 repository 메소드에 제대로 된 필드 값이 들어오지 않아 발생                  | JpaRepository에 페이지네이션으로 구현했으나 파라미터에 pageable을 넣지 않아 발생했다. pageable을 파라미터로 넣어주어 해결 |
-| `SQLSyntaxErrorException`        | JPQL을 쓰던 중 GroupBy절을 쓰는데 group으로 묶은 필드가 들어오지 않아 발생             | JGroupBy에 필요한 필드들을 담아서 해결 | 
-| `PropertyValueException`        | PartyUser 엔티티는 Party 필드값이 NotNull인데 파티를 먼저 삭제하고 파티 유저를 삭제하려고 하니 파티 유저의 파티 값이 null로 되어 발생                  | 파티유저를 먼저 삭제 후 파티를 삭제하여 해결 | 
-| `N+1`        | @ManyToOne과 @OneToMany 사용 시 조회를 하는 과정에서 한 번의 쿼리문이 아닌 반복적인 쿼리 문 발생                  | 1. 필요한 필드명만 따로 뺀 클래스를 만들어 해결  | 
-|        | Fetch Join을 사용하여 해결                  | 파티유저를 먼저 삭제 후 파티를 삭제하여 해결 | 
-| `cors(Mixed Content)`        | 백엔드가 배포한 프로젝트에서 프론트 배포 주소 허용 안해서 발생                  | 프론트 요청 주소 허용해주는 config 빈으로 등록 후 SecutiryConfig에 추가하여 해결 | 
-| `동시성 문제`        | 파티 등록할 때 여러 사람이 동시에 파티에 참여할 때 참여 가능한 인원수보다 오바되는 경우 발생              | 파티를 조회할 때 낙관적 락을 걸어 처리가 끝난 후에 다음 조회 처리가 가능하도록 하여 해결 |
-|         | 한 사람이 여러 파티에 동시에 가입할 때 돈이 한 파티에 관해서만 빠지는 현상 발생                  | 유저의 돈을 업데이트 할 때 db에서 처리하도록 UserRepository에서 update문을 넣어주어 실행하도록 변경하여 해결 |
+| `Filter에서 발생한 예외처리`  | 토큰이 만료되었을 때는 filter에서 예외처리가 발생하는데 해당 예외처리는 ControllerAdvice에서 동작을 하지 않아 클라이언트에게는 500이 발생  | CustomException을 만들어서 Filter에서 예외처리 메시지를 출력하도록 하여 해결                                                    |
+| `webSocket https시 접속 불가능한 error`  | https로 배포시 webSocket 연결이 안 되는 문제  | Nginx 파일에 webSocket에 해당하는 url도 proxyPass로 추가해주어 해결                                  |
+| `webSocket 연결이 아무나 가능한 error`  | webSocket연결 시 회원이 아니어도 접속이 가능한 문제  | webSocket 연결 전에 쿠키 안에 있는 토큰을 검증하고 websocket 연결할 수 있는 handShake추가                                  |
+| `webSocket을 통한 DB 전송 시 db부하`  | webSocket을 통한 전송은 매우 가벼우므로 채팅 같은데 유용하다 그래서 메시지 하나당 db를 타는 것은 일부 메시지는손실되는 문제  | 메시지를 키 값으로 redis에 저장하여 @Schedule을 통해 일정 시간만큼 한 번에 저장하거나 채팅 리스트 불러올 때 redis에 있는 메시지 저장                                  |
+| `S3 서버 client에서 사용시 denied error 발생`  | client가 S3 이미지 접근 시도 시 접근 불가 문제  | S3서버에서 해당 client 요청에 대한 것은 허용하여 해결                                 |
+| `N+1`  | TeamUser를 조회하는 과정에서 유저가 포함되어 있는 Team 수만큼 select 진행 | TeamUser 조회할 때 항상 Team이 필요하므로 @EntityGraph를 통해 Team도 한 번에 조회                                                    |
+| `saveAll`  | 메시지를 한 번에 저장할 때 메시지 개수만큼 insert문이 실행되는 문제  | saveAll은 save의 for문 동작만 생략한 것이지 내부적으로 for문을 돌고 있다는 것을 알게되었다. 그래서 jdbcTemplate를 사용해 Batch개수만큼 한 번에 insert하는 걸로 바꾸었다. 
+| `동시성 문제 발생`  | 팀 탈퇴 시 역할이 Manger이면서 Manger 한 명일 때는 본인 탈퇴가 불가능하다 하지만 두명의 Manager가 동시에 탈퇴를 누르면 탈퇴가 진헹되는 문제가 있다.                  | Select해올 때 persimisitc Lock을 사용하여 다음 요청은 이전 요청이 끝나면 들어오도록 하여 해결 |
+| `  | 팀당 참여인원이 10명으로 제한이므로 9명일 때 동시에 초대를 하면 초대가 가능한 문제 발생                 | 멤버를 조회할 때 persimisitc Lock을 사용하여 해결 |
+| `Cors에러`        | 백엔드 배포 주소가 https여서 프론트가 로컬에서 http로 접속 시 에러 발생             | corsConfig에 프론트 로컬 주소도 허용하여 해결 | 
+
 
 <br/>
 
-## 7. Lessons Learned
+## 6. Lessons Learned
 
 
 ### Lessons
 
-#### *비관적 락 (Pessimistic Lock)*
-프로젝트를 진행하면서 상품 수량이나 파티 참여 인원 등의 동시성 문제를 해결하기 위해 **비관적 락(Pessimistic Lock)**을 적용하는 방법을 배웠습니다. 이를 통해 동시에 여러 트랜잭션이 동일한 데이터를 수정하는 충돌을 방지할 수 있었습니다.
+### *Redis를 활용한 성능 최적화*  
 
-배운 점:
-##### 1.비관적 락의 역할
-- 트랜잭션이 데이터를 조회할 때, 다른 트랜잭션이 해당 데이터를 수정하지 못하도록 잠금(Lock) 설정
-즉, 데이터 충돌 가능성을 미리 차단하여 동시성 이슈를 방지
-##### 2.설정 방법
--JPA의 @Lock(LockModeType.PESSIMISTIC_WRITE)을 사용하여 테이블 레벨에서 락을 걸 수 있음
-- 상품 수량이나 파티 참여 인원을 조정할 때, 트랜잭션이 종료될 때까지 다른 트랜잭션의 접근을 차단
-- PESSIMISTIC_READ와 PESSIMISTIC_WRITE의 차이를 이해하고 적절한 방식 선택
-###### 3.적용 후 개선점
-- 데이터 일관성 보장 → 동시 요청이 많아도 상품 수량이나 파티 참여 인원 데이터가 정확하게 유지됨
-- 경쟁 조건 해결 → 동시에 여러 사용자가 접근해도 잘못된 데이터 저장 문제를 방지
-- 안전하지만 성능 저하 가능성 → 트랜잭션이 길어지면 데드락(deadlock) 발생 가능성이 있으므로 주의해야 함
+프로젝트를 진행하면서 **웹소켓 기반 실시간 채팅**과 **데이터 조회 성능 최적화**를 위해 **Redis**를 적용하는 방법을 배웠습니다.  
+이를 통해 DB 부하를 줄이고 빠른 데이터 처리를 가능하게 했습니다.  
 
-#### *@Modifying을 활용한 유저 금액 업데이트*
-프로젝트를 진행하면서 비관적 락(Pessimistic Lock)의 성능 비용이 크다는 점을 고려하여, 유저 돈을 업데이트하는 것은 비관적인 락을 사용하는 것이 아닌 다른 방법인 데이터베이스에서 직접 처리하는 방식을 적용했습니다. 이를 위해 JPA의 @Modifying과 @Query를 사용하여 유저의 잔액을 업데이트하는 방법을 배웠습니다.
+#### 배운 점:  
 
-배운 점:
-###### 1. @Modifying을 활용한 직접 쿼리 실행
-- @Modifying을 사용하면 JPA가 아닌 DB 레벨에서 바로 데이터를 업데이트할 수 있음
-- 엔터티를 조회 후 변경하는 방식 대신, 한 번의 SQL 실행으로 데이터 수정 가능
-###### 2. 설정 방법
-- Spring Data JPA에서 @Modifying과 @Query를 사용하여 잔액을 바로 감소시키는 SQL 실행
-- @Transactional을 함께 적용하여 트랜잭션 내에서 처리되도록 보장
-  
-```
-@Modifying
-@Query("UPDATE User u SET u.balance = u.balance - :amount WHERE u.id = :userId AND u.balance >= :amount")
-int deductBalance(@Param("userId") Long userId, @Param("amount") int amount);
-```
-- 위 코드를 실행하면, 잔액이 충분한 경우에만 감소하며, 여러 사용자가 동시에 요청해도 충돌이 줄어듦
+##### 1. Redis의 역할  
+- **메모리 기반 저장소**로, 빠른 읽기/쓰기 성능을 제공  
+- **Key-Value 구조**로 데이터를 저장하며, 캐싱, 세션 관리, 실시간 데이터 저장 등에 활용  
+- **웹소켓 기반 채팅**에서 DB에 직접 저장하는 대신 Redis에 저장하여 빠르게 처리하고, 일정 조건에 따라 배치 저장  
 
-###### 3. 적용 후 개선점
-- 성능 향상 → 비관적 락(Pessimistic Lock) 대신, 데이터베이스가 직접 처리하여 성능 비용을 절감
-- 경쟁 조건 해결 → SQL 한 줄로 업데이트하므로 동시성 문제가 줄어듦
-- 트랜잭션 충돌 방지 → 기존에 엔터티를 조회하고 수정하는 방식보다 트랜잭션 시간이 짧아져 데드락 위험이 감소
+##### 2. 설정 방법  
+- `채팅 메시지 저장`  
+  - 채팅이 오갈 때마다 DB에 바로 저장하지 않고, Redis에 우선 저장  
+  - 이후 특정 스케줄(예: 일정 시간이 지나거나 채팅 리스트 불러올 때) DB에 일괄 저장  
+- `데이터 조회 최적화`  
+  - 매번 DB에서 유저 데이터를 가져오는 대신, Redis에 저장해두고 빠르게 조회  
+  - Redis에 데이터가 없을 경우(DB 조회 필요) → DB에서 가져온 후 Redis에 캐싱  
+- `활용한 자료구조`  
+  - `Hash`: 유저 정보 캐싱  
+  - `List`: 채팅 메시지 저장 및 관리  
 
-### Learned
+##### 3. 적용 후 개선점  
+- **빠른 응답 속도** → 메모리 기반으로 작동하여 실시간 채팅에서도 지연 없이 데이터 처리 가능  
+- **DB 부하 감소** → 모든 요청이 DB를 거치지 않고, Redis를 활용하여 캐싱된 데이터를 먼저 조회  
+- **효율적인 데이터 관리** → 필요할 때만 DB와 동기화하여 데이터 일관성을 유지  
+
+Redis를 도입함으로써 **웹소켓 기반 실시간 채팅**과 **데이터 조회 성능**을 최적화할 수 있었습니다.  
+이를 통해 빠르고 효율적인 서비스 운영이 가능해졌습니다. 🚀  
+
+
+### *QueryDSL을 활용한 쿼리 최적화*  
+
+프로젝트를 진행하면서 **JPQL의 오타 가능성과 유지보수 어려움**을 해결하기 위해 **QueryDSL**을 적용하는 방법을 배웠습니다.  
+이를 통해 **타입 안정성**을 확보하고, 복잡한 쿼리를 더 직관적으로 작성할 수 있었습니다.  
+
+#### 배운 점:  
+
+##### 1. QueryDSL의 역할  
+- JPQL은 **문자열 기반**이라 오타 발생 가능성이 높고, **컴파일 시 오류를 확인할 수 없음**  
+- QueryDSL은 **타입 안전성**을 보장하여 컴파일 단계에서 오류를 확인할 수 있음  
+- 복잡한 **동적 쿼리**를 더욱 가독성 높고 유지보수하기 쉽게 작성 가능  
+
+##### 2. 설정 방법  
+- Gradle에서 QueryDSL을 사용하기 위해 의존성을 추가  
+- `./gradlew compileQuerydsl` 실행하여 `Q` 클래스를 자동 생성  
+- 기존 JPQL은 문자열로 작성되지만, QueryDSL을 사용하면 **메서드 체이닝 방식으로 가독성이 향상**  
+
+##### 3. 적용 후 개선점  
+- **타입 안정성 보장** → 컴파일 타임에서 오류 감지 가능  
+- **가독성 및 유지보수성 향상** → 쿼리 수정이 직관적이며, 문자열 오타 문제 해결  
+- **동적 쿼리 작성이 쉬움** → BooleanBuilder 등을 활용하여 유연한 조건 추가 가능  
+- **JPQL보다 안전하고 강력한 쿼리 작성 가능**  
+
+QueryDSL을 도입함으로써 **보다 안전하고 유지보수하기 쉬운 쿼리**를 작성할 수 있었습니다. 🚀 
+
+### *웹소켓 핸드쉐이크를 통한 인증 처리*  
+프로젝트를 진행하면서 웹소켓 기반 실시간 기능을 제공하기 위해, 웹소켓 핸드쉐이크 과정에서 JWT 토큰 인증을 적용하는 방법을 배웠습니다.
+이를 통해 웹소켓 연결 시 인증을 처리하고, 인증된 유저만 웹소켓에 접근할 수 있도록 보안을 강화할 수 있었습니다.
+
+#### 배운 점:
+##### 1. 웹소켓 핸드쉐이크의 역할
+- 웹소켓 핸드쉐이크는 클라이언트와 서버 간의 연결을 설정하는 과정
+- JWT 토큰을 활용하여 클라이언트의 인증 정보를 확인하고, 유효한 토큰을 가진 유저만 연결을 허용
+- 핸드쉐이크 시, beforeHandshake 메서드에서 쿠키를 통해 토큰을 가져오고, 유효성 검사를 수행하여 인증된 사용자만 접근 가능
+##### 2. 설정 방법
+- JwtHandshakeInterceptor 클래스에서 beforeHandshake 메서드 구현
+- 토큰을 쿠키에서 가져와 검증 → 유효한 토큰일 경우 유저 정보를 attributes에 추가하여 인증 처리
+**HttpServletRequest**에서 쿠키를 가져와 Authorization 헤더에 있는 토큰 값을 확인
+- 토큰이 유효하지 않으면 **HttpStatus.UNAUTHORIZED**로 응답을 보내 연결을 차단
+##### 3. 적용 후 개선점
+- 웹소켓 연결 시 인증 보장 → 유효한 JWT 토큰을 가진 유저만 접근 가능
+- 보안 강화 → 웹소켓을 통한 비인가된 접근 차단
+- 효율적인 사용자 인증 처리 → 매번 웹소켓 연결 시마다 토큰을 검증하여 보안을 유지
+- 직관적인 코드 구현 → 웹소켓 연결 핸들러에서 인증 로직을 명확하게 처리
+
+웹소켓 핸드쉐이크 과정에서 JWT 토큰 인증을 적용함으로써 웹소켓 연결 보안을 강화하고, 인증된 유저만 접근할 수 있는 시스템을 구현할 수 있었습니다. 🚀
+
+### Learned  
+
+- **Redis를 활용하여 성능을 최적화**하면서, 데이터 저장 전략을 보다 효율적으로 설계하는 방법을 배웠다.  
+- **실시간 채팅과 같은 빠른 데이터 처리가 필요한 경우**, 직접 DB에 저장하는 것보다 **캐싱을 활용하는 것이 효과적**임을 경험했다.  
+- **QueryDSL을 사용하면서** JPQL보다 유지보수가 훨씬 편리하고, **동적 쿼리를 쉽게 작성할 수 있음을 실감**했다.  
+- **동시성 문제를 해결하기 위해 비관적 락(Pessimistic Lock)**을 적용하는 과정에서, 성능과 안정성 사이의 균형을 고려해야 함을 깨달았다.  
+- 프로젝트를 진행하면서 **데이터 일관성, 성능, 유지보수성**을 모두 고려하는 것이 중요함을 배웠다.  
+- 웹소켓 연결 끊김 처리: 유저가 채팅방에서 나간 시간 외에도 예기치 않게 웹소켓이 끊겼을 때 유저의 읽은 시간을 처리하기 위해 @EventListener를 활용하여 세션 종료 시 유저의 읽은 시간을 자동으로 처리하도록 구현함으로써, 데이터 일관성을 유지할 수 있었다.
+
 
 
 <br/>
 
-## 8. Feedback
 
-✔️   
-✔️   
-✔️   
-✔️   
-
-<br/>
-
-## 9. 느낀점
+## 7. 느낀점
 
 
