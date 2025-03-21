@@ -23,4 +23,11 @@ public class ScheduleUser {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_user_id")
     private TeamUser teamUser;
+
+    public static ScheduleUser of(Schedule schedule, TeamUser teamUser){
+        return ScheduleUser.builder()
+                .schedule(schedule)
+                .teamUser(teamUser)
+                .build();
+    }
 }

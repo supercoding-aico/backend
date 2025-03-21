@@ -4,6 +4,8 @@ import com.github.aico.repository.notifications.Notifications;
 import com.github.aico.repository.notifications.NotificationsRepository;
 import com.github.aico.repository.schedule.Schedule;
 import com.github.aico.repository.schedule.ScheduleRepository;
+import com.github.aico.repository.schedule_user.ScheduleUser;
+import com.github.aico.repository.schedule_user.ScheduleUserRepository;
 import com.github.aico.repository.team.Team;
 import com.github.aico.repository.team.TeamRepository;
 import com.github.aico.repository.team_user.TeamUser;
@@ -36,6 +38,7 @@ public class ScheduleService {
     private final NotificationsRepository notificationsRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final TeamRepository teamRepository;
+    private final ScheduleUserRepository scheduleUserRepository;
 
     @Transactional(readOnly = true)
     public ResponseDto getSchedules(User user, Long teamId, LocalDate startDate, LocalDate endDate) {
@@ -52,9 +55,15 @@ public class ScheduleService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NotFoundException("TeamId를 찾을 수 없습니다."));
         List<TeamUser> teamUserList = teamUserRepository.findAllByTeam(team);
-        Schedule schedule = Schedule.of(request, teamId, teamUsers);
-        scheduleRepository.save(schedule);
+        //teamId로 받는 게 아닌 team으로 받는 걸로 변경
+        Schedule schedule = Schedule.of2(request, team);
+        Schedule saveSchedule =scheduleRepository.save(schedule);
+        for (TeamUser teamUser : teamUsers){
+            ScheduleUser scheduleUser = ScheduleUser.of(saveSchedule,teamUser);
+            scheduleUserRepository.save(scheduleUser);
+        }
 
+        log.info("유저 아이디: " + user.getUserId());
         TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(teamId, user.getUserId())
                 .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
 
