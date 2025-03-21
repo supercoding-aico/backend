@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(of = "scheduleId")
 @Entity
 @Table(name = "schedule")
+@Builder
 public class Schedule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,14 +61,14 @@ public class Schedule extends BaseEntity {
         this.scheduleUsers.addAll(newScheduleUsers);
     }
 
-    public static Schedule of(ScheduleRequest request, Long teamId, List<TeamUser> teamUsers) {
+    public static Schedule of(ScheduleRequest request, Team team, List<TeamUser> teamUsers) {
         if (teamUsers == null) {
             teamUsers = new ArrayList<>();
         }
 
         // @Builder 대신 직접 객체 생성
         Schedule schedule = new Schedule();
-        schedule.team = new Team(teamId);
+        schedule.team = team;
         schedule.content = request.getContent();
         schedule.scheduleStatus = request.getScheduleStatus();
         schedule.startDate = request.getStartDate();
@@ -75,6 +76,7 @@ public class Schedule extends BaseEntity {
         schedule.scheduleUsers = new ArrayList<>(); // 명시적 초기화
 
         if (!teamUsers.isEmpty()) {
+            System.out.println("teamUsers: " + teamUsers);
             List<ScheduleUser> scheduleUsers = teamUsers.stream()
                     .map(teamUser -> new ScheduleUser(null, schedule, teamUser))
                     .collect(Collectors.toList());
@@ -82,5 +84,16 @@ public class Schedule extends BaseEntity {
         }
 
         return schedule;
+    }
+
+    public static Schedule of2(ScheduleRequest request, Team team) {
+        return Schedule.builder()
+                        .team(team)
+                .content(request.getContent())
+                .scheduleStatus(request.getScheduleStatus())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .build();
+
     }
 }

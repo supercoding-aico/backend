@@ -24,7 +24,7 @@ public class ScheduleResponse {
         this.startDate = schedule.getStartDate();
         this.endDate = schedule.getEndDate();
         this.users = schedule.getScheduleUsers().stream()
-                .map(scheduleUser -> new UserInfo(scheduleUser.getTeamUser().getUser().getUserId()))
+                .map(scheduleUser -> new UserInfo(scheduleUser.getTeamUser().getUser().getUserId(),scheduleUser.getTeamUser().getUser().getNickname()))
                 .collect(Collectors.toList());
     }
 
@@ -35,9 +35,11 @@ public class ScheduleResponse {
     @Getter
     public static class UserInfo {
         private final Long userId;
+        private final String nickName;
 
-        public UserInfo(Long userId) {
+        public UserInfo(Long userId,String nickName) {
             this.userId = userId;
+            this.nickName = nickName;
         }
     }
 }
