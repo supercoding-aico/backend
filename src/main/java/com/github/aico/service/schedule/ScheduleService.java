@@ -51,22 +51,18 @@ public class ScheduleService {
 
     @Transactional
     public ResponseDto createSchedule(User user, Long teamId, ScheduleRequest request) {
-        List<TeamUser> teamUsers = teamUserRepository.findAllById(request.getUsers());
+        log.info("Request Users: {}", request.getUsers());
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamTeamIdAndUserUserIdIn(teamId, request.getUsers());
+        log.info("Found TeamUsers: {}", teamUsers.stream().map(tu -> tu.getUser().getUserId()).collect(Collectors.toList()));
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NotFoundException("TeamId를 찾을 수 없습니다."));
+        Schedule schedule = Schedule.of2(request, team, teamUsers);
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+        log.info("Saved Schedule Users: {}", savedSchedule.getScheduleUsers().stream().map(su -> su.getTeamUser().getUser().getUserId()).collect(Collectors.toList()));
+        // 알림 로직 유지
         List<TeamUser> teamUserList = teamUserRepository.findAllByTeam(team);
-        //teamId로 받는 게 아닌 team으로 받는 걸로 변경
-        Schedule schedule = Schedule.of2(request, team);
-        Schedule saveSchedule =scheduleRepository.save(schedule);
-        for (TeamUser teamUser : teamUsers){
-            ScheduleUser scheduleUser = ScheduleUser.of(saveSchedule,teamUser);
-            scheduleUserRepository.save(scheduleUser);
-        }
-
-        log.info("유저 아이디: " + user.getUserId());
         TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(teamId, user.getUserId())
                 .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
-
         Set<TeamUser> allRecipients = new HashSet<>(teamUserList);
         allRecipients.add(requesterTeamUser);
 
@@ -78,8 +74,6 @@ public class ScheduleService {
                     .isRead(false)
                     .build();
             notificationsRepository.save(notification);
-
-            log.info(teamUser.getUser().getUserId()+"");
 
             messagingTemplate.convertAndSend(
                     "/topic/notification/" + teamUser.getUser().getUserId(),

@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MeetingRepository extends JpaRepository<Meeting, Long> {
-    @Query("SELECT m FROM Meeting m WHERE m.team.teamId = :teamId")
+    @Query("SELECT m FROM Meeting m " +
+            "JOIN FETCH m.participants mu " +
+            "JOIN FETCH mu.teamUser tu " +
+            "JOIN FETCH tu.user " +
+            "WHERE m.team.teamId = :teamId")
     Page<Meeting> findByTeamId(@Param("teamId") Long teamId, Pageable pageable);
 }

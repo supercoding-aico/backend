@@ -86,14 +86,22 @@ public class Schedule extends BaseEntity {
         return schedule;
     }
 
-    public static Schedule of2(ScheduleRequest request, Team team) {
-        return Schedule.builder()
-                        .team(team)
+    public static Schedule of2(ScheduleRequest request, Team team, List<TeamUser> teamUsers) { // teamUsers 추가
+        Schedule schedule = Schedule.builder()
+                .team(team)
                 .content(request.getContent())
                 .scheduleStatus(request.getScheduleStatus())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
+                .scheduleUsers(new ArrayList<>()) // 초기화
                 .build();
 
+        if (teamUsers != null && !teamUsers.isEmpty()) {
+            List<ScheduleUser> scheduleUsers = teamUsers.stream()
+                    .map(teamUser -> new ScheduleUser(null, schedule, teamUser))
+                    .collect(Collectors.toList());
+            schedule.scheduleUsers.addAll(scheduleUsers);
+        }
+        return schedule;
     }
 }
