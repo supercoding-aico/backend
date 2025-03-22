@@ -22,6 +22,9 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
     List<TeamUser> findByUserAndTeamTeamIdIn(User user, List<Long> teamIds);
     @EntityGraph(attributePaths = {"user", "user.userProfileImage"})
     List<TeamUser> findByTeamAndUserIdIn(Team team, Collection<Long> user_id);
+    @EntityGraph(attributePaths = {"user"}) // user 정보도 함께 로드
+    List<TeamUser> findByTeamTeamIdAndUserUserIdIn(Long teamId, List<Long> userIds);
+
 
     Optional<TeamUser> findByTeamAndUser(Team team, User user);
 

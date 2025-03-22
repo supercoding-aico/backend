@@ -10,7 +10,9 @@ import com.github.aico.repository.team_user.TeamUserRepository;
 import com.github.aico.repository.user.User;
 import com.github.aico.repository.user.UserRepository;
 import com.github.aico.service.openai.OpenAiClient;
+import com.github.aico.service.redis.RedisUtil;
 import com.github.aico.web.dto.base.ResponseDto;
+import com.github.aico.web.dto.chat.request.Chatting;
 import com.github.aico.web.dto.meeting.request.MeetingAiRequest;
 import com.github.aico.web.dto.meeting.request.MeetingUpdateRequest;
 import com.github.aico.web.dto.meeting.response.MeetingAiResponse;
@@ -26,6 +28,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,34 +40,54 @@ public class MeetingService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final OpenAiClient openAiClient;
+    private final RedisUtil redisUtil;
 
-//    public MeetingService(MeetingRepository meetingRepository,
-//                          TeamUserRepository teamUserRepository,
-//                          TeamRepository teamRepository,
-//                          UserRepository userRepository,
-//                          OpenAiClient openAiClient) {
-//        this.meetingRepository = meetingRepository;
-//        this.teamUserRepository = teamUserRepository;
-//        this.teamRepository = teamRepository;
-//        this.userRepository = userRepository;
-//        this.openAiClient = openAiClient;
-//    }
+    public MeetingService(MeetingRepository meetingRepository,
+                          TeamUserRepository teamUserRepository,
+                          TeamRepository teamRepository,
+                          UserRepository userRepository,
+                          OpenAiClient openAiClient,
+                          RedisUtil redisUtil) {
+        this.meetingRepository = meetingRepository;
+        this.teamUserRepository = teamUserRepository;
+        this.teamRepository = teamRepository;
+        this.userRepository = userRepository;
+        this.openAiClient = openAiClient;
+        this.redisUtil = redisUtil;
+    }
 
     @Transactional
     public ResponseDto requestAiSummary(Long teamId, List<MeetingAiRequest> requestList, User user) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found for teamId: " + teamId));
 
-        String combinedContent = requestList.stream()
-                .map(req -> String.format("**%s**: %s", req.getNickname(), req.getContent()))
+        // Redis에서 채팅 기록 가져오기
+        List<Chatting> chattings = redisUtil.getMessageListFromRedis(teamId);
+        if (chattings.isEmpty()) {
+            throw new IllegalStateException("해당 팀에 채팅 기록이 없습니다.");
+        }
+
+        // 채팅 기록에서 모든 참여자 추출
+        Set<Long> participantIds = chattings.stream()
+                .map(Chatting::getUserId)
+                .collect(Collectors.toSet());
+
+        // DB에서 사용자 정보 조회
+        List<User> participantsUsers = userRepository.findAllByIdIn(participantIds);
+        Map<Long, User> userMap = participantsUsers.stream()
+                .collect(Collectors.toMap(User::getUserId, Function.identity()));
+
+        // TeamUser 매핑
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamAndUserIdIn(team, participantIds);
+        Map<Long, TeamUser> teamUserMap = teamUsers.stream()
+                .collect(Collectors.toMap(tu -> tu.getUser().getUserId(), Function.identity()));
+
+        // 채팅 내용 결합
+        String combinedContent = chattings.stream()
+                .map(chat -> String.format("**%s**: %s", userMap.get(chat.getUserId()).getNickname(), chat.getContent()))
                 .collect(Collectors.joining("\n"));
 
-        String aiResponse;
-        try {
-            aiResponse = openAiClient.getAiSummary(combinedContent);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get AI summary: " + e.getMessage(), e);
-        }
+        String aiResponse = openAiClient.getAiSummary(combinedContent);
         String markdownResponse = String.format("### 회의록 요약\n%s", aiResponse);
 
         Meeting meeting = Meeting.builder()
@@ -72,21 +96,20 @@ public class MeetingService {
                 .participants(new ArrayList<>())
                 .build();
 
-        if (requestList != null) {
-            List<MeetingUser> participants = requestList.stream()
-                    .map(req -> {
-                        User participantUser = userRepository.findById(req.getUserId())
-                                .orElseThrow(() -> new IllegalArgumentException("User not found for userId: " + req.getUserId()));
-                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team, participantUser)
-                                .orElseThrow(() -> new IllegalArgumentException("TeamUser not found for userId: " + req.getUserId() + " in teamId: " + teamId));
-                        return MeetingUser.builder()
-                                .meeting(meeting)
-                                .teamUser(teamUser)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-            meeting.getParticipants().addAll(participants);
-        }
+        // 모든 채팅 참여자를 participants에 추가
+        List<MeetingUser> participants = participantIds.stream()
+                .map(userId -> {
+                    TeamUser teamUser = teamUserMap.get(userId);
+                    if (teamUser == null) {
+                        throw new IllegalArgumentException("TeamUser not found for userId: " + userId + " in teamId: " + teamId);
+                    }
+                    return MeetingUser.builder()
+                            .meeting(meeting)
+                            .teamUser(teamUser)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        meeting.getParticipants().addAll(participants);
 
         meetingRepository.save(meeting);
 
@@ -95,7 +118,6 @@ public class MeetingService {
                 markdownResponse
         );
 
-        // 생성자로 ResponseDto 반환
         return new ResponseDto(200, "답변 성공", Map.of("aiResponse", aiResponseDto));
     }
 
