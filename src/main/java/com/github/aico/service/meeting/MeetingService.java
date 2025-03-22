@@ -42,19 +42,7 @@ public class MeetingService {
     private final OpenAiClient openAiClient;
     private final RedisUtil redisUtil;
 
-    public MeetingService(MeetingRepository meetingRepository,
-                          TeamUserRepository teamUserRepository,
-                          TeamRepository teamRepository,
-                          UserRepository userRepository,
-                          OpenAiClient openAiClient,
-                          RedisUtil redisUtil) {
-        this.meetingRepository = meetingRepository;
-        this.teamUserRepository = teamUserRepository;
-        this.teamRepository = teamRepository;
-        this.userRepository = userRepository;
-        this.openAiClient = openAiClient;
-        this.redisUtil = redisUtil;
-    }
+
 
     @Transactional
     public ResponseDto requestAiSummary(Long teamId, List<MeetingAiRequest> requestList, User user) {
