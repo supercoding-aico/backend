@@ -29,7 +29,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/aiCoWebsocket")
                 .setAllowedOrigins("*");
-//                .addInterceptors(jwtHandshakeInterceptor);
+//                .addInterceptors(jwtHandshakeInterceptor);/
 
     }
     @Override

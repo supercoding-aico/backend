@@ -12,7 +12,7 @@ import java.util.Collections;
 public class OpenAiClient {
     private final OpenAiService openAiService;
 
-    public OpenAiClient(@Value("${openai.api.key}") String apiKey) {
+    public OpenAiClient(@Value("${openai.api-key}") String apiKey) {
         this.openAiService = new OpenAiService(apiKey);
     }
 

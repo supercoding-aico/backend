@@ -17,6 +17,7 @@ import com.github.aico.web.dto.meeting.request.MeetingAiRequest;
 import com.github.aico.web.dto.meeting.request.MeetingUpdateRequest;
 import com.github.aico.web.dto.meeting.response.MeetingAiResponse;
 import com.github.aico.web.dto.meeting.response.MeetingResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MeetingService {
     private final MeetingRepository meetingRepository;
     private final TeamUserRepository teamUserRepository;
