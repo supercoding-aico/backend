@@ -42,22 +42,14 @@ public class MeetingService {
     private final OpenAiClient openAiClient;
     private final RedisUtil redisUtil;
 
-
-
     @Transactional
     public ResponseDto requestAiSummary(Long teamId, List<MeetingAiRequest> requestList, User user) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found for teamId: " + teamId));
 
-        // Redis에서 채팅 기록 가져오기
-        List<Chatting> chattings = redisUtil.getMessageListFromRedis(teamId);
-        if (chattings.isEmpty()) {
-            throw new IllegalStateException("해당 팀에 채팅 기록이 없습니다.");
-        }
-
-        // 채팅 기록에서 모든 참여자 추출
-        Set<Long> participantIds = chattings.stream()
-                .map(Chatting::getUserId)
+        // 파라미터에서 받아온 request에서 유저 가져오기
+        Set<Long> participantIds = requestList.stream()
+                .map(MeetingAiRequest::getUserId)
                 .collect(Collectors.toSet());
 
         // DB에서 사용자 정보 조회
@@ -71,8 +63,8 @@ public class MeetingService {
                 .collect(Collectors.toMap(tu -> tu.getUser().getUserId(), Function.identity()));
 
         // 채팅 내용 결합
-        String combinedContent = chattings.stream()
-                .map(chat -> String.format("**%s**: %s", userMap.get(chat.getUserId()).getNickname(), chat.getContent()))
+        String combinedContent = requestList.stream()
+                .map(request -> String.format("**%s**: %s", userMap.get(request.getUserId()).getNickname(), request.getContent()))
                 .collect(Collectors.joining("\n"));
 
         String aiResponse = openAiClient.getAiSummary(combinedContent);
@@ -118,7 +110,7 @@ public class MeetingService {
                 .map(MeetingResponse::new)
                 .collect(Collectors.toList());
 
-        Map<String, Object> data = Map.of( //Page 객체를 활용해 페이지네이션 정보를 추가로 반환?
+        Map<String, Object> data = Map.of( //Page 객체를 활용해 페이지네이션 정보를 추가로 반환
                 "meetings", meetingResponses,
                 "totalPages", meetings.getTotalPages(),
                 "currentPage", meetings.getNumber(),
