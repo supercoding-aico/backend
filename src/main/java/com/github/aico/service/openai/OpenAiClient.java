@@ -20,7 +20,7 @@ public class OpenAiClient {
         ChatCompletionRequest request = ChatCompletionRequest.builder()
                 .model("gpt-3.5-turbo-0125") // 최신 모델로 변경 (또는 gpt-4 사용 가능)
                 .messages(Collections.singletonList(
-                        new ChatMessage("user", "You are an AI that summarizes meeting notes in markdown format. Respond in Korean.\n" + content)
+                        new ChatMessage("user", "You are an AI that summarizes meeting notes in markdown format. Respond in Korean. 200자 이내로 요약해주세요.\n" + content)
                 ))
                 .maxTokens(500)
                 .build();
