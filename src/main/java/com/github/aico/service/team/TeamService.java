@@ -440,6 +440,11 @@ public class TeamService {
             response.sendRedirect("http://localhost:3000?code=401");// http://localhost:3000?code=401
             return;
         }
+        // 회원가입이 되어 있지 않을 때
+        if (user == null) {
+            response.sendRedirect("http://localhost:3000/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
+            return;
+        }
 
         // 회원가입은 되어 있고 팀이 아닐 때
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(joinTeam, user).orElse(null);
@@ -457,11 +462,7 @@ public class TeamService {
             response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }
-        // 회원가입이 되어 있지 않을 때
-        if (user == null) {
-            response.sendRedirect("http://localhost:3000/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
-            return;
-        }
+
     }
 
 
