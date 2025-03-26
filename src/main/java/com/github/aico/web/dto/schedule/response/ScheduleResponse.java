@@ -15,7 +15,7 @@ public class ScheduleResponse {
     private final ScheduleStatus scheduleStatus;
     private final LocalDate startDate;
     private final LocalDate endDate;
-    private final List<UserInfo> users;
+    private final List<Long> users; // UserInfo 대신 List<Long>으로 변경
 
     public ScheduleResponse(Schedule schedule) {
         this.scheduleId = schedule.getScheduleId();
@@ -24,22 +24,11 @@ public class ScheduleResponse {
         this.startDate = schedule.getStartDate();
         this.endDate = schedule.getEndDate();
         this.users = schedule.getScheduleUsers().stream()
-                .map(scheduleUser -> new UserInfo(scheduleUser.getTeamUser().getUser().getUserId(),scheduleUser.getTeamUser().getUser().getNickname()))
+                .map(scheduleUser -> scheduleUser.getTeamUser().getUser().getUserId()) // userId만 추출
                 .collect(Collectors.toList());
     }
 
     public static ScheduleResponse from(Schedule schedule) {
         return new ScheduleResponse(schedule);
-    }
-
-    @Getter
-    public static class UserInfo {
-        private final Long userId;
-        private final String nickName;
-
-        public UserInfo(Long userId,String nickName) {
-            this.userId = userId;
-            this.nickName = nickName;
-        }
     }
 }
