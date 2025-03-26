@@ -55,10 +55,12 @@ public class Schedule extends BaseEntity {
 
         this.scheduleUsers.clear();
 
-        List<ScheduleUser> newScheduleUsers = teamUsers.stream()
-                .map(teamUser -> new ScheduleUser(null, this, teamUser))
-                .collect(Collectors.toList());
-        this.scheduleUsers.addAll(newScheduleUsers);
+        if (teamUsers != null && !teamUsers.isEmpty()) {
+            List<ScheduleUser> newScheduleUsers = teamUsers.stream()
+                    .map(teamUser -> new ScheduleUser(null, this, teamUser))
+                    .collect(Collectors.toList());
+            this.scheduleUsers.addAll(newScheduleUsers);
+        }
     }
 
     public static Schedule of(ScheduleRequest request, Team team, List<TeamUser> teamUsers) {

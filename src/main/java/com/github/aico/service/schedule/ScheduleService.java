@@ -98,12 +98,23 @@ public class ScheduleService {
     public ResponseDto updateSchedule(User user, Long scheduleId, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("스케줄을 찾을 수 없습니다."));
-        List<TeamUser> teamUsers = teamUserRepository.findAllById(request.getUsers());
-        schedule.update(request, teamUsers);
-        scheduleRepository.save(schedule); // 명시적 저장
 
-        TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(schedule.getTeam().getTeamId(), user.getUserId())
-                .orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
+        // 수정: 팀 소속 유저만 조회
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamTeamIdAndUserUserIdIn(
+                schedule.getTeam().getTeamId(),
+                request.getUsers()
+        );
+        if (teamUsers.isEmpty()) {
+            throw new NotFoundException("요청된 사용자가 팀에 속해 있지 않습니다.");
+        }
+
+        schedule.update(request, teamUsers);
+        scheduleRepository.save(schedule);
+
+        TeamUser requesterTeamUser = teamUserRepository.findByTeamTeamIdAndUserId(
+                schedule.getTeam().getTeamId(),
+                user.getUserId()
+        ).orElseThrow(() -> new NotFoundException("요청자가 팀에 속해 있지 않습니다."));
 
         Set<TeamUser> allRecipients = new HashSet<>(teamUsers);
         allRecipients.add(requesterTeamUser);
@@ -117,14 +128,13 @@ public class ScheduleService {
                     .build();
             notificationsRepository.save(notification);
 
-            // NotificationResponse에 scheduleId, teamId, registeredBy 추가
             NotificationResponse notificationResponse = new NotificationResponse(
                     notification.getNotificationsId(),
                     "스케줄 수정",
                     request.getContent(),
-                    schedule.getScheduleId(),      // Schedule에서 가져옴
-                    schedule.getTeam().getTeamId(), // Team에서 가져옴
-                    user.getNickname()             // 등록자 정보 (User에서 가져옴)
+                    schedule.getScheduleId(),
+                    schedule.getTeam().getTeamId(),
+                    user.getNickname()
             );
             messagingTemplate.convertAndSend(
                     "/topic/notification/" + teamUser.getUser().getUserId(),
