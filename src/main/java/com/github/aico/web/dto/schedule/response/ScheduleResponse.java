@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class ScheduleResponse {
     private final Long scheduleId;
     private final String content;
-    private final ScheduleStatus status;
+    private final ScheduleStatus scheduleStatus;
     private final LocalDate startDate;
     private final LocalDate endDate;
     private final List<UserInfo> users;
@@ -20,7 +20,7 @@ public class ScheduleResponse {
     public ScheduleResponse(Schedule schedule) {
         this.scheduleId = schedule.getScheduleId();
         this.content = schedule.getContent();
-        this.status = schedule.getScheduleStatus();
+        this.scheduleStatus = schedule.getScheduleStatus();
         this.startDate = schedule.getStartDate();
         this.endDate = schedule.getEndDate();
         this.users = schedule.getScheduleUsers().stream()
