@@ -12,6 +12,7 @@ import com.github.aico.service.exceptions.NotFoundException;
 import com.github.aico.service.redis.RedisUtil;
 import com.github.aico.web.dto.chat.request.ActiveTeamUser;
 import com.github.aico.web.dto.chat.request.Chatting;
+import com.github.aico.web.dto.chat.response.Toggle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -41,7 +42,7 @@ public class ChattingService {
         List<Long> userIds = redisUtil.getUserIdByTeamId(chatting.getTeamId());
         if (!userIds.isEmpty()){
             for (Long userId : userIds){
-                messagingTemplate.convertAndSend("/topic/toggle/" + userId,true);
+                messagingTemplate.convertAndSend("/topic/toggle/" + userId, Toggle.status());
             }
         }
 
