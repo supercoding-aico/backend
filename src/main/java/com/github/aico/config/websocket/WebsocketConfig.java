@@ -20,7 +20,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 //    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic/room","/topic/notification");
+        config.enableSimpleBroker("/topic/room","/topic/notification","/topic/toggle");
         config.setApplicationDestinationPrefixes("/app");
 
     }
