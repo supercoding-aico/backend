@@ -33,6 +33,7 @@ public class ChattingService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
 
+    //채팅 보내기
     public void sendChatting(Chatting chatting) {
         chatting.saveCreatedAt();
         redisUtil.addChatting(chatting);
@@ -40,12 +41,7 @@ public class ChattingService {
         messagingTemplate.convertAndSend("/topic/room/" + chatting.getTeamId(), chatting);
 //        List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(chatting.getTeamId());
         List<Long> userIds = redisUtil.getUserIdByTeamId(chatting.getTeamId());
-        if (!userIds.isEmpty()){
-            for (Long userId : userIds){
-                messagingTemplate.convertAndSend("/topic/toggle/" + userId, Toggle.status());
-            }
-        }
-
+        sendNewMessage(userIds);
     }
 
     //유저가 채팅방에서 끊기고 연결된 시간
@@ -55,7 +51,15 @@ public class ChattingService {
         log.info(activeTeamUser.getLastReadAt()+ "시간");
         //redis에 저장해두었다가 팀 불러올 때 db에 저장
         redisUtil.addTeamLastReadAt(activeTeamUser);
+    }
 
-
+    //새로운 메시지가 도작했다는 Boolean 값보내기
+    //sendChatting에서 해당 메소드 사용
+    public void sendNewMessage(List<Long> userIds){
+        if (!userIds.isEmpty()){
+            for (Long userId : userIds){
+                messagingTemplate.convertAndSend("/topic/toggle/" + userId, Toggle.status());
+            }
+        }
     }
 }

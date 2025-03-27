@@ -170,16 +170,23 @@ public class AuthService {
             // 만약 이메일을 추출할 수 없다면, 토큰이 잘못되었거나 만료되었음을 의미
             throw new TokenValidateException("토큰이 잘못되었습니다.");
         }
+        //토큰에서 발급한 이메일로 유저 조회
         User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(()->new NotFoundException(email+ "에 해당하는 유저가 존재하지 않습니다."));
+        // 찾은 유저로 리프레쉬 토큰 조회
         RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
                 .orElseThrow(()-> new NotFoundException(user.getNickname() + "님의 refresh 토큰이 존재하지 않습니다."));
+        //기존 쿠키 삭제
         deleteCookie(response);
+        //만약 리프레쉬 토큰이 만료되었으면
+        //리프레쉬 토큰을 db에서 삭제 후 만료 예외처리
         if (refreshToken.getExpirationDate().isBefore(LocalDateTime.now())){
             refreshTokenRepository.delete(refreshToken);
             throw new TokenValidateException("refreshToken이 만료되었습니다. 다시 로그인 해주세요");
         }
+        //리프레쉬 토큰이 살아있다면 새로운 엑세스 토큰 발급
         String newAccessToken = jwtTokenProvider.createRefreshToken(email);
+        //새로운 쿠키 생성
         createCookie(newAccessToken,response);
         return new ResponseDto(HttpStatus.CREATED.value(),"새로운 토큰이 발급되었습니다.");
     }
@@ -200,8 +207,10 @@ public class AuthService {
      * team가입
      **/
     private void joinTeam(String token, SignUpRequest signUpRequest,User saveUser) {
+        //토큰에서 이메일과 teamId 추출
         String tokenEmail = jwtTokenProvider.getEmail(token);
         Long tokenTeamId = jwtTokenProvider.getTeamId(token);
+
         redisUtil.invalidateUsersCache(tokenTeamId);
 
         // Redis에서 이메일로 저장된 데이터가 없거나 이메일이 일치하지 않으면 예외 처리
@@ -211,12 +220,13 @@ public class AuthService {
 
         // 초대 토큰에 대한 데이터 삭제
         redisUtil.deleteData(tokenEmail);
+        //redis에서 teamUser 리프레쉬를 위해 제거 실행
         redisUtil.invalidateUsersCache(tokenTeamId);
         // 팀 ID로 팀 조회
         Team joinTeam = teamRepository.findById(tokenTeamId)
                 .orElseThrow(() -> new NotFoundException("가입하려는 팀이 존재하지 않습니다."));
 
-        // 팀에 이미 10명이 있으면 가입 불가
+        // 팀에 이미 10명이 있으면 가입 불가 Lock을 사용하여 동시성 확인
         List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
         if (teamUsers.size() >= 10) {
             throw new NotFoundException("가입하려는 팀은 이미 10명이라 참여 불가능합니다.");
@@ -226,7 +236,6 @@ public class AuthService {
         TeamUser teamUser = TeamUser.of(joinTeam, saveUser, TeamRole.MEMBER);
         redisUtil.invalidateTeamIdsCache(saveUser.getUserId());
         teamUserRepository.save(teamUser);
-
     }
     /**
      * Cookie 삭제
