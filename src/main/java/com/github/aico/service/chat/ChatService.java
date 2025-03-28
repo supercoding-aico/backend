@@ -98,22 +98,87 @@ public ResponseDto getTeamChatListResult(User user, Long teamId, Integer page) {
      * 일정 시간마다 redis에 남아있는 채팅 저장해주기
      * */
     @Scheduled(fixedRate = 86400000) // 24시간 (1000ms * 60s * 60m * 24h)
-    public void chatHistorySave(){
+    @Transactional
+    public void chatHistorySave() {
         List<Chatting> chattings = redisUtil.getAllMessage();
-        if (!chattings.isEmpty()){
-            redisUtil.deleteAllMessage();
-            List<Chat> historyChats = chattings.stream()
-                    .map(chat -> {
-                        User findUser = userRepository.findById(chat.getUserId())
-                                .orElseThrow(()-> new NotFoundException("유저를 찾을 수 없습니다."));
-                        Team team = teamRepository.findById(chat.getTeamId())
-                                .orElseThrow(()-> new NotFoundException(chat.getTeamId() + "에 해당하는 팀은 존재하지 않습니다."));
-                        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,findUser)
-                                .orElseThrow(()-> new NotFoundException("팀에 해당되어 있지 않은 유저가 있습니다."));
-                        return Chat.of(chat, teamUser);
-                    })
-                    .toList();
-            chatRepository.saveAllBatch(historyChats);
+        if (!chattings.isEmpty()) {
+            Set<Long> userIds = collectUserIds(chattings);
+            Set<Long> teamIds = collectTeamIds(chattings);
+
+            Map<Long, User> userMap = fetchUserMap(userIds);
+            Map<Long, Team> teamMap = fetchTeamMap(teamIds);
+            Map<String, TeamUser> teamUserMap = fetchTeamUserMap(teamIds, userIds);
+
+            List<Chat> historyChats = convertToChatList(chattings, userMap, teamMap, teamUserMap);
+
+            saveChatHistory(historyChats);
         }
+    }
+
+    // 1. userId 수집
+    private Set<Long> collectUserIds(List<Chatting> chattings) {
+        return chattings.stream()
+                .map(Chatting::getUserId)
+                .collect(Collectors.toSet());
+    }
+
+    // 2. teamId 수집
+    private Set<Long> collectTeamIds(List<Chatting> chattings) {
+        return chattings.stream()
+                .map(Chatting::getTeamId)
+                .collect(Collectors.toSet());
+    }
+
+    // 3. User 맵 조회
+    private Map<Long, User> fetchUserMap(Set<Long> userIds) {
+        return userRepository.findAllByIdIn(userIds).stream()
+                .collect(Collectors.toMap(User::getUserId, Function.identity()));
+    }
+
+    // 4. Team 맵 조회
+    private Map<Long, Team> fetchTeamMap(Set<Long> teamIds) {
+        return teamRepository.findAllByTeamIdIn(teamIds).stream()
+                .collect(Collectors.toMap(Team::getTeamId, Function.identity()));
+    }
+
+    // 5. TeamUser 맵 조회
+    private Map<String, TeamUser> fetchTeamUserMap(Set<Long> teamIds, Set<Long> userIds) {
+        List<TeamUser> teamUsers = teamUserRepository.findByTeamIdInAndUserIdIn(teamIds, userIds);
+        return teamUsers.stream()
+                .collect(Collectors.toMap(
+                        tu -> tu.getTeam().getTeamId() + "_" + tu.getUser().getUserId(),
+                        Function.identity()
+                ));
+    }
+
+    // 6. Chatting을 Chat으로 변환
+    private List<Chat> convertToChatList(List<Chatting> chattings,
+                                         Map<Long, User> userMap,
+                                         Map<Long, Team> teamMap,
+                                         Map<String, TeamUser> teamUserMap) {
+        return chattings.stream()
+                .map(chat -> {
+                    User foundUser = userMap.get(chat.getUserId());
+                    if (foundUser == null) {
+                        throw new NotFoundException("유저를 찾을 수 없습니다: " + chat.getUserId());
+                    }
+                    Team team = teamMap.get(chat.getTeamId());
+                    if (team == null) {
+                        throw new NotFoundException(chat.getTeamId() + "에 해당하는 팀은 존재하지 않습니다.");
+                    }
+                    String teamUserKey = chat.getTeamId() + "_" + chat.getUserId();
+                    TeamUser teamUser = teamUserMap.get(teamUserKey);
+                    if (teamUser == null) {
+                        throw new NotFoundException("팀에 해당되지 않은 유저가 있습니다: " + chat.getUserId());
+                    }
+                    return Chat.of(chat, teamUser);
+                })
+                .toList();
+    }
+
+    // 7. Redis 삭제 및 DB 저장
+    private void saveChatHistory(List<Chat> historyChats) {
+        redisUtil.deleteAllMessage();
+        chatRepository.saveAllBatch(historyChats);
     }
 }

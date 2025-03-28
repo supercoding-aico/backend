@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.github.aico.repository.team_user.QTeamUser.teamUser;
 
@@ -78,5 +79,17 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
                         .and(teamUser.teamRole.eq(role)))
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)  // 락 설정
                 .fetch();  // 결과 리스트 반환
+    }
+    @Override
+    public List<TeamUser> findByTeamIdInAndUserIdIn(Set<Long> teamIds, Set<Long> userIds) {
+        QTeamUser teamUser = QTeamUser.teamUser;
+
+        return jpaQueryFactory
+                .selectFrom(teamUser)
+                .where(
+                        teamUser.team.teamId.in(teamIds)
+                                .and(teamUser.user.userId.in(userIds))
+                )
+                .fetch();
     }
 }
