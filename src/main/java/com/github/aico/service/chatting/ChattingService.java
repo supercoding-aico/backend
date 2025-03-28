@@ -39,7 +39,7 @@ public class ChattingService {
         redisUtil.addChatting(chatting);
 
         messagingTemplate.convertAndSend("/topic/room/" + chatting.getTeamId(), chatting);
-//        List<Long> userIds = teamUserRepository.findTeamUserIdsByTeam(chatting.getTeamId());
+
         List<Long> userIds = redisUtil.getUserIdByTeamId(chatting.getTeamId());
         sendNewMessage(userIds);
     }

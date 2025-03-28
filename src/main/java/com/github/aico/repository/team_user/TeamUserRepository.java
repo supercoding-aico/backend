@@ -30,6 +30,7 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
 
     List<TeamUser> findAllByUser(User user);
     List<TeamUser> findAllByTeam(Team team);
+    List<TeamUser> findByTeamTeamIdIn(List<Long> teamIds);
 
     Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);
     boolean existsByTeamAndUser(Team team, User user);
