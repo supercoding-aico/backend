@@ -32,6 +32,8 @@ public interface TeamUserRepository extends JpaRepository<TeamUser,Long>, QTeamU
     List<TeamUser> findAllByTeam(Team team);
     List<TeamUser> findByTeamTeamIdIn(List<Long> teamIds);
 
+    List<TeamUser> findByTeamAndTeamRole(Team team, TeamRole role); // 기본 JPA 메서드
+
     Optional<TeamUser> findByTeamTeamIdAndUserId(Long teamId, Long userId);
     boolean existsByTeamAndUser(Team team, User user);
 
