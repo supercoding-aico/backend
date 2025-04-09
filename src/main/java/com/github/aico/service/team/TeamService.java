@@ -21,6 +21,7 @@ import com.github.aico.web.dto.team.response.TeamsResponse;
 import com.github.aico.web.dto.teamUser.request.LeaveTeamMember;
 import com.github.aico.web.dto.teamUser.response.TeamMember;
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,10 @@ public class TeamService {
     @Value("${spring.mail.username}")
     private String senderEmail;
     private final RedisUtil redisUtil;
+    @Value("${invite.front}")
+    private String invite;
+    @Value("${invite.back}")
+    private String join;
     /**
      * 내 팀 리스트 조회
      * */
@@ -384,9 +389,9 @@ public class TeamService {
         MimeMessage mimeMessage = sender.createMimeMessage();
 
 
-        String backendUrl = "https://www.ai-co.store/api/team/join/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
+        String backendUrl = join +"/team/join/"+team.getTeamId()+"?token=" + inviteToken; // 초대 수락 URL
         try {
-            mimeMessage.setFrom(senderEmail);
+            mimeMessage.setFrom(new InternetAddress(senderEmail, "Ai-Co 팀"));
             mimeMessage.setRecipients(MimeMessage.RecipientType.TO,inviteEmail);
             mimeMessage.setSubject("Ai-Co 프로젝트 팀명 : " + team.getTeamName() + "초대 링크입니다." );
 
@@ -420,7 +425,7 @@ public class TeamService {
         // 팀이 유효하지 않을 때
         Team joinTeam = teamRepository.findById(teamId).orElse(null);
         if (joinTeam == null) {
-            response.sendRedirect("https://ai-co.usze.xyz?code=404");    // http://localhost:3000?code=404
+            response.sendRedirect(invite+"?code=404");    // http://localhost:3000?code=404
             return;
         }
 
@@ -429,18 +434,18 @@ public class TeamService {
 
         //이미 팀에 가입되어 있을 때
         if (teamUserRepository.existsByTeamAndUser(joinTeam, user)) {
-            response.sendRedirect("https://ai-co.usze.xyz/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
+            response.sendRedirect(join+"/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }
 
         // 토큰이 유효하지 않을 때
         if (redisUtil.getData(tokenEmail) == null) {
-            response.sendRedirect("https://ai-co.usze.xyz?code=401");// http://localhost:3000?code=401
+            response.sendRedirect(join+"?code=401");// http://localhost:3000?code=401
             return;
         }
         // 회원가입이 되어 있지 않을 때
         if (user == null) {
-            response.sendRedirect("https://ai-co.usze.xyz/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
+            response.sendRedirect(join+"/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
             return;
         }
 
@@ -450,14 +455,14 @@ public class TeamService {
             List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
 
             if (teamUsers.size() >= 10){
-                response.sendRedirect("https://ai-co.usze.xyz?code=400"); // http://localhost:3000?code=400
+                response.sendRedirect(join+"?code=400"); // http://localhost:3000?code=400
                 return;
             }
             TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
             teamUserRepository.save(joinTeamUser);
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
             redisUtil.invalidateTeamIdsCache(user.getUserId());
-            response.sendRedirect("https://ai-co.usze.xyz/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
+            response.sendRedirect(join+"/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }
 

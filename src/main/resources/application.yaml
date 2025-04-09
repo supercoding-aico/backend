@@ -73,3 +73,6 @@ logging:
   level:
     io.netty.resolver.dns: DEBUG
     org.springframework.jdbc: TRACE
+invite:
+  front: ENC(O9E4k7yFdeLP+GWSF77K8Dqybiet2WpTlEUvGHXtMfA=)
+  back: ENC(PYuJH5df6JENwC14IErCUkuIU6Kgo2lAm0ZMHEakFkEEBsIrQuxl1Q==)
