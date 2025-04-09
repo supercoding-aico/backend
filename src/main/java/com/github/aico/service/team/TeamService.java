@@ -434,18 +434,18 @@ public class TeamService {
 
         //이미 팀에 가입되어 있을 때
         if (teamUserRepository.existsByTeamAndUser(joinTeam, user)) {
-            response.sendRedirect(join+"/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
+            response.sendRedirect(invite+"/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
             return;
         }
 
         // 토큰이 유효하지 않을 때
         if (redisUtil.getData(tokenEmail) == null) {
-            response.sendRedirect(join+"?code=401");// http://localhost:3000?code=401
+            response.sendRedirect(invite+"?code=401");// http://localhost:3000?code=401
             return;
         }
         // 회원가입이 되어 있지 않을 때
         if (user == null) {
-            response.sendRedirect(join+"/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
+            response.sendRedirect(invite+"/signup?token="+inviteToken); // http://localhost:3000/signup?token={토큰}
             return;
         }
 
@@ -455,15 +455,15 @@ public class TeamService {
             List<TeamUser> teamUsers = teamUserRepository.findByTeamWithLockDsl(joinTeam);
 
             if (teamUsers.size() >= 10){
-                response.sendRedirect(join+"?code=400"); // http://localhost:3000?code=400
+                response.sendRedirect(invite+"?code=400"); // http://localhost:3000?code=400
                 return;
             }
             TeamUser joinTeamUser = TeamUser.of(joinTeam, user,TeamRole.MEMBER);
             teamUserRepository.save(joinTeamUser);
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
             redisUtil.invalidateTeamIdsCache(user.getUserId());
-            response.sendRedirect(join+"/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
-            return;
+            response.sendRedirect(invite+"/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
+
         }
 
     }
