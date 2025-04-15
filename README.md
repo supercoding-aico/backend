@@ -171,6 +171,35 @@ ci: CI 설정 수정
 
 <br/>
 
+## 5-1 주요 트러블 슈팅
+### 1) 동시성  
+#### - 한 파티의 2명의 매니저가 동시에 탈퇴 시도 시(manager가 한명일 경우에는 본인이 팀 탈퇴가 불가능함) 
+
+#### *Lock 적용 전*  
+```
+        List<TeamUser> findByTeamAndTeamRole(Team team, TeamRole role);
+```   
+![아이코 동시성 실패 리드미](https://github.com/user-attachments/assets/2632f3d4-8e8b-4557-bce8-a3684ee2cb7a)  
+
+
+#### *Lock 적용 후*  
+```
+    @Override
+    public List<TeamUser> findByTeamAndRoleWithLockDsl(Team team, TeamRole role) {
+        QTeamUser teamUser = QTeamUser.teamUser;
+
+        return jpaQueryFactory.selectFrom(teamUser)
+                .where(teamUser.team.eq(team)
+                        .and(teamUser.teamRole.eq(role)))
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE) 
+                .fetch(); 
+    }
+```    
+![아이코 동시성 성공 리드미](https://github.com/user-attachments/assets/98dc16e4-46fa-4c0e-ab26-0257429fe3d8)  
+
+
+<br/>
+
 ## 6. Lessons Learned
 
 
