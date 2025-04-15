@@ -1,6 +1,6 @@
 
 # 📡AiCo Project🤝
-![아이코 리드미 로고](https://github.com/user-attachments/assets/6fc73d9a-822b-4b7b-b70a-ab349039f1e5)
+![아이코 리드미 2](https://github.com/user-attachments/assets/2e9c0a3a-d1ee-415c-bf21-bcf2dc65154b)
 
 <br/><br/>
 
