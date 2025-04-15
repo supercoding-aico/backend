@@ -24,11 +24,6 @@ spring:
 #  cache:
 #    type: simple
 
-
-
-
-
-
   mail:
     # Google smtp server 사용
     host: smtp.gmail.com
@@ -43,17 +38,17 @@ spring:
           auth: true
   data:
     redis:
-      host: localhost
+      #host: localhost
+      host: ENC(n60mvykJRU2R5SBqLmUiyatj973/jexg) #ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7)
       port: 6379
-      #password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
+      password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
 
 
 jwt:
   secret-key-source: ENC(TH3JEhaFp/YER6btYCYQ99ZH9nDc/zuXPIVNM/JnshmEAOsccENF1WNlkkII/0xt)
 jasypt:
   encryptor:
-    # password: ${JASYPT_SECRET_KEY}
-    password: aicobackend99
+    password: ${JASYPT_SECRET_KEY}
     bean: jasyptStringEncryptor
 
 cloud:

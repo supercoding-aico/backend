@@ -100,59 +100,53 @@ public class TeamService {
                 ));
 
         if (teamIdToLastReadAt.isEmpty()) {
-            log.warn("No valid ActiveTeamUser data to update for user: {}", user.getUserId());
             redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
             return;
         }
-
-
-        log.info("teamIdToLastReadAt: {}", teamIdToLastReadAt);
         teamUserRepository.updateChatReadAtBulk(user.getUserId(), teamIdToLastReadAt);
 
         redisUtil.removeAllTeamLastReadAtByUserId(user.getUserId());
     }
-//    @Scheduled(fixedRate = 300000)
-//    @Scheduled(fixedRate = 60000) // 1분(60,000ms)
-//    @Transactional
-//    public void activeUserSaveAll(){
-//        List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAtAll();
-//        if (!activeTeamUsers.isEmpty()){
-//            Map<Long, List<ActiveTeamUser>> userActiveMap = activeTeamUsers.stream()
-//                    .collect(Collectors.groupingBy(ActiveTeamUser::getUserId));
-//            for (Map.Entry<Long, List<ActiveTeamUser>> entry : userActiveMap.entrySet()) {
-//                Long userId = entry.getKey();
-//                List<ActiveTeamUser> userActiveTeamUsers = entry.getValue();
-//                User user = userRepository.findById(userId).orElse(null);
-//                if (user != null) {
-//                    saveActiveTeamUsers(user, userActiveTeamUsers);
-//                } else {
-//                    log.warn("User not found for userId: {}", userId);
-//                }
-//            }
-//            redisUtil.removeAllTeamLastReadAt();
-//        }
-//
-//    }
-//    private void saveActiveTeamUsers(User user, List<ActiveTeamUser> activeTeamUsers) {
-//        List<Long> teamIds = activeTeamUsers.stream()
-//                .map(ActiveTeamUser::getTeamId)
-//                .toList();
-//        log.info("teamIds for user {}: {}", user.getUserId(), teamIds);
-//
-//        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user, teamIds);
-//        log.info("teamUserList for user {}: {}", user.getUserId(), teamUserList);
-//
-//        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
-//                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
-//
-//        teamUserList.forEach(teamUser -> {
-//            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
-//            if (activeTeamUser != null) {
-//                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
-//            }
-//        });
-//
-//    }
+   //일정시간마다 활성화 비활성화 시간 저장
+    @Scheduled(fixedRate = 60000) // 1분(60,000ms)
+    @Transactional
+    public void activeUserSaveAll(){
+        List<ActiveTeamUser> activeTeamUsers = redisUtil.getTeamLastReadAtAll();
+        if (!activeTeamUsers.isEmpty()){
+            Map<Long, List<ActiveTeamUser>> userActiveMap = activeTeamUsers.stream()
+                    .collect(Collectors.groupingBy(ActiveTeamUser::getUserId));
+            for (Map.Entry<Long, List<ActiveTeamUser>> entry : userActiveMap.entrySet()) {
+                Long userId = entry.getKey();
+                List<ActiveTeamUser> userActiveTeamUsers = entry.getValue();
+                User user = userRepository.findById(userId).orElse(null);
+                if (user != null) {
+                    saveActiveTeamUsers(user, userActiveTeamUsers);
+                } else {
+                    log.warn("유저 아이디 {}에 해당하는 유저를 찾을 수 없습니다", userId);
+                }
+            }
+            redisUtil.removeAllTeamLastReadAt();
+        }
+
+    }
+    private void saveActiveTeamUsers(User user, List<ActiveTeamUser> activeTeamUsers) {
+        List<Long> teamIds = activeTeamUsers.stream()
+                .map(ActiveTeamUser::getTeamId)
+                .toList();
+
+        List<TeamUser> teamUserList = teamUserRepository.findByUserAndTeamTeamIdIn(user, teamIds);
+
+        Map<Long, ActiveTeamUser> activeTeamUserMap = activeTeamUsers.stream()
+                .collect(Collectors.toMap(ActiveTeamUser::getTeamId, activeTeamUser -> activeTeamUser));
+
+        teamUserList.forEach(teamUser -> {
+            ActiveTeamUser activeTeamUser = activeTeamUserMap.get(teamUser.getTeam().getTeamId());
+            if (activeTeamUser != null) {
+                teamUser.changeChatReadAt(activeTeamUser.getLastReadAt());
+            }
+        });
+
+    }
     /**
      * 팀 만들기
      * */
@@ -217,57 +211,57 @@ public class TeamService {
     /**
      * 팀 탈퇴
      * */
-//    @Transactional
-//    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
-//        Team team = teamRepository.findById(teamId)
-//                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
-//        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
-//        //팀과 유저에 대해 해당 팀유저 역할 확인
-//        TeamRole teamRole = checkTeamRole(team,user);
-//        Long leaveUserId = leaveTeamMember.getUserId();
-//        //동시성을 위해 Lock 사용
-//        //Manager가 1명일 때는 팀 탈퇴가 불가능(두명에 mananger가 동시에 탈퇴 버튼 누를 시 팀 삭제도 불가능해지므로 Lock 적용)
-//        List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team,TeamRole.MANAGER);
-//        User leaveUser = userRepository.findById(leaveUserId)
-//                .orElseThrow(()-> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
-//        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,leaveUser)
-//                .orElseThrow(()->new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
-//        //본인은 본인 탈퇴만 가능 매니저는 다른 팀원(매니저도 포함) 탈퇴 가능/최소 한명의 매니저는 필요
-//        if (teamRole.equals(TeamRole.MANAGER)){
-//            //동시성 고려해보기
-//            handleManagerLeave(team, user, leaveUserId, teamManagers, teamUser);
-//        }//역할이 Member일 때
-//        else {
-//            handleMemberLeave(user, leaveUserId, teamUser);
-//        }
-//        redisUtil.invalidateUsersCache(teamId);
-//        return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
-//    }
     @Transactional
     public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
-        System.out.println("leaveTeamResult called with teamId: " + teamId);
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
+                .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
         List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
-        TeamRole teamRole = checkTeamRole(team, user);
+        //팀과 유저에 대해 해당 팀유저 역할 확인
+        TeamRole teamRole = checkTeamRole(team,user);
         Long leaveUserId = leaveTeamMember.getUserId();
-
+        //동시성을 위해 Lock 사용
+        //Manager가 1명일 때는 팀 탈퇴가 불가능(두명에 mananger가 동시에 탈퇴 버튼 누를 시 팀 삭제도 불가능해지므로 Lock 적용)
+        List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team,TeamRole.MANAGER);
         User leaveUser = userRepository.findById(leaveUserId)
-                .orElseThrow(() -> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
-        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team, leaveUser)
-                .orElseThrow(() -> new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
-
-        if (teamRole.equals(TeamRole.MANAGER)) {
-            List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team, TeamRole.MANAGER);
-            System.out.println("Managers before leave: " + teamManagers.size());
+                .orElseThrow(()-> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
+        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,leaveUser)
+                .orElseThrow(()->new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
+        //본인은 본인 탈퇴만 가능 매니저는 다른 팀원(매니저도 포함) 탈퇴 가능/최소 한명의 매니저는 필요
+        if (teamRole.equals(TeamRole.MANAGER)){
+            //동시성 고려해보기
             handleManagerLeave(team, user, leaveUserId, teamManagers, teamUser);
-        } else {
+        }//역할이 Member일 때
+        else {
             handleMemberLeave(user, leaveUserId, teamUser);
         }
-
         redisUtil.invalidateUsersCache(teamId);
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
+//    @Transactional
+//    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
+//        System.out.println("leaveTeamResult called with teamId: " + teamId);
+//        Team team = teamRepository.findById(teamId)
+//                .orElseThrow(() -> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
+//        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
+//        TeamRole teamRole = checkTeamRole(team, user);
+//        Long leaveUserId = leaveTeamMember.getUserId();
+//
+//        User leaveUser = userRepository.findById(leaveUserId)
+//                .orElseThrow(() -> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
+//        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team, leaveUser)
+//                .orElseThrow(() -> new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
+//
+//        if (teamRole.equals(TeamRole.MANAGER)) {
+//            List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team, TeamRole.MANAGER);
+//            System.out.println("떠난 매니저 수: " + teamManagers.size());
+//            handleManagerLeave(team, user, leaveUserId, teamManagers, teamUser);
+//        } else {
+//            handleMemberLeave(user, leaveUserId, teamUser);
+//        }
+//
+//        redisUtil.invalidateUsersCache(teamId);
+//        return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
+//    }
 
     @Transactional
     public ResponseDto memberInviteResult(Long teamId, User user, EmailDuplicate inviteEmail) {
@@ -321,30 +315,30 @@ public class TeamService {
     /**
      * 매니저가 탈퇴할 때
      * */
-//    void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
-//        if (teamManagers.size() == 1) {
-//            // 매니저가 1명일 때
-//            // 본인은 탈퇴 불가
-//            if (leaveUserId.equals(user.getUserId())) {
-//                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
-//            } else { //다른 유저는 탈퇴 가능
-//                teamUserRepository.delete(teamUser);
-//            } //1명 아닐 때는 본인도 탈퇴 가능
-//        } else {
-//            teamUserRepository.delete(teamUser);
-//        }
-//    }
-    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
-        System.out.println("Handling leave for user: " + leaveUserId + ", manager count: " + teamManagers.size());
+    void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
         if (teamManagers.size() == 1) {
+            // 매니저가 1명일 때
+            // 본인은 탈퇴 불가
             if (leaveUserId.equals(user.getUserId())) {
-                throw new BadRequestException("현재 Manager의 수는 1명 본인 혼자이므로 탈퇴 불가능합니다.");
-            }
+                throw new BadRequestException("현재 Manager의 수는 " + teamManagers.size() + "명 본인 혼자이므로 탈퇴 불가능합니다.");
+            } else { //다른 유저는 탈퇴 가능
+                teamUserRepository.delete(teamUser);
+            } //1명 아닐 때는 본인도 탈퇴 가능
         } else {
-            System.out.println("Deleting teamUser: " + teamUser.getTeamUserId());
             teamUserRepository.delete(teamUser);
         }
     }
+//    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
+//        System.out.println("떠난 유저 아이디: " + leaveUserId + ", 매니저 수: " + teamManagers.size());
+//        if (teamManagers.size() == 1) {
+//            if (leaveUserId.equals(user.getUserId())) {
+//                throw new BadRequestException("현재 Manager의 수는 1명 본인 혼자이므로 탈퇴 불가능합니다.");
+//            }
+//        } else {
+//
+//            teamUserRepository.delete(teamUser);
+//        }
+//    }
     /**
      * 일반 멤버가 탈퇴할 때
      * */
@@ -400,7 +394,7 @@ public class TeamService {
             redisUtil.deleteData(tokenEmail);  // 가입 후 토큰 삭제
             redisUtil.invalidateTeamIdsCache(user.getUserId());
             response.sendRedirect("http://localhost:3000/team/detail/"+teamId); // http://localhost:3000/team/detail/{teamId}
-            return;
+
         }
 
     }

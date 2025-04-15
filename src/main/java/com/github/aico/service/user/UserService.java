@@ -35,8 +35,6 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserProfileImageRepository userProfileImageRepository;
-    private final RoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
     private final S3Uploader s3Uploader;
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;

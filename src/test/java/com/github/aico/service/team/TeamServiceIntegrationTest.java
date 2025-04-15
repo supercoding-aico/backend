@@ -117,25 +117,26 @@ class TeamServiceIntegrationTest {
 //    }
 
     @Test
+    @Transactional
     void leaveTeamResult_ConcurrentManagerLeave() throws InterruptedException {
         // Given: DB에 미리 삽입된 데이터 조회
         Team savedTeam = teamRepository.findById(103L)
-                .orElseThrow(() -> new IllegalStateException("Team 103 not found in DB"));
+                .orElseThrow(() -> new IllegalStateException("Team 103을 찾을 수 없습니다."));
         User savedUser1 = userRepository.findById(216L)
-                .orElseThrow(() -> new IllegalStateException("User 216 not found in DB"));
+                .orElseThrow(() -> new IllegalStateException("User 216을 찾을 수 없습니다."));
         User savedUser2 = userRepository.findById(217L)
-                .orElseThrow(() -> new IllegalStateException("User 217 not found in DB"));
+                .orElseThrow(() -> new IllegalStateException("User 217을 찾을 수 없습니다."));
 
         Long teamId = savedTeam.getTeamId();
-        System.out.println("Using pre-inserted Team ID: " + teamId);
+
 
         // TeamUser 확인
         TeamUser teamUser1 = teamUserRepository.findByTeamAndUser(savedTeam, savedUser1)
-                .orElseThrow(() -> new IllegalStateException("TeamUser for user 216 not found"));
+                .orElseThrow(() -> new IllegalStateException("216번 팀 유저를 찾을 수 없습니다."));
         TeamUser teamUser2 = teamUserRepository.findByTeamAndUser(savedTeam, savedUser2)
-                .orElseThrow(() -> new IllegalStateException("TeamUser for user 217 not found"));
-        System.out.println("TeamUser1 ID: " + teamUser1.getTeamUserId());
-        System.out.println("TeamUser2 ID: " + teamUser2.getTeamUserId());
+                .orElseThrow(() -> new IllegalStateException("217번 팀 유저를 찾을 수 없습니다."));
+        System.out.println("TeamUser1의 Id: " + teamUser1.getTeamUserId());
+        System.out.println("TeamUser2의 Id: " + teamUser2.getTeamUserId());
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(2);
@@ -144,14 +145,13 @@ class TeamServiceIntegrationTest {
         // When
         Runnable leaveTask1 = () -> {
             try {
-                System.out.println("User1 attempting to leave with teamId: " + teamId);
+                System.out.println("User1이 떠난 팀 Id: " + teamId);
                 teamService.leaveTeamResult(savedUser1, teamId, new LeaveTeamMember(savedUser1.getUserId()));
-                System.out.println("User1 left successfully");
+                System.out.println("User1 정상적으로 떠났습니다.");
                 successCount.incrementAndGet();
             } catch (BadRequestException e) {
-                System.out.println("User1 failed to leave: " + e.getMessage());
+                System.out.println("User1 탈퇴 실패: " + e.getMessage());
             } catch (Exception e) {
-                System.out.println("User1 unexpected error: " + e.getMessage());
                 e.printStackTrace();
             } finally {
                 latch.countDown();
@@ -160,14 +160,14 @@ class TeamServiceIntegrationTest {
 
         Runnable leaveTask2 = () -> {
             try {
-                System.out.println("User2 attempting to leave with teamId: " + teamId);
+                System.out.println("User2가 떠난 팀 Id: " + teamId);
                 teamService.leaveTeamResult(savedUser2, teamId, new LeaveTeamMember(savedUser2.getUserId()));
-                System.out.println("User2 left successfully");
+                System.out.println("User2 탈퇴 성공");
                 successCount.incrementAndGet();
             } catch (BadRequestException e) {
-                System.out.println("User2 failed to leave: " + e.getMessage());
+                System.out.println("User2 탈퇴 실패: " + e.getMessage());
             } catch (Exception e) {
-                System.out.println("User2 unexpected error: " + e.getMessage());
+
                 e.printStackTrace();
             } finally {
                 latch.countDown();
@@ -181,8 +181,8 @@ class TeamServiceIntegrationTest {
 
         // Then
         List<TeamUser> remainingManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(savedTeam, TeamRole.MANAGER);
-        System.out.println("Remaining managers: " + remainingManagers.size());
-        System.out.println("Success count: " + successCount.get());
+        System.out.println("남은 매니저 수: " + remainingManagers.size());
+        System.out.println("성공 카운트: " + successCount.get());
         assertEquals(1, remainingManagers.size(), "Exactly one manager should remain");
         assertEquals(1, successCount.get(), "Only one manager should leave successfully");
     }
