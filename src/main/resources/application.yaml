@@ -39,7 +39,7 @@ spring:
   data:
     redis:
       #host: localhost
-      host: ENC(n60mvykJRU2R5SBqLmUiyatj973/jexg) #ENC(4i+ka2OLOJPRQUSzIXfseA6RSvcUhwx7)
+      host: ENC(n60mvykJRU2R5SBqLmUiyatj973/jexg)
       port: 6379
       password: ENC(4jc8zprzCJTQ3qjGiSwInQ==)
 

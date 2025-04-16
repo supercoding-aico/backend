@@ -130,14 +130,6 @@ class TeamServiceIntegrationTest {
         Long teamId = savedTeam.getTeamId();
 
 
-        // TeamUser 확인
-        TeamUser teamUser1 = teamUserRepository.findByTeamAndUser(savedTeam, savedUser1)
-                .orElseThrow(() -> new IllegalStateException("216번 팀 유저를 찾을 수 없습니다."));
-        TeamUser teamUser2 = teamUserRepository.findByTeamAndUser(savedTeam, savedUser2)
-                .orElseThrow(() -> new IllegalStateException("217번 팀 유저를 찾을 수 없습니다."));
-        System.out.println("TeamUser1의 Id: " + teamUser1.getTeamUserId());
-        System.out.println("TeamUser2의 Id: " + teamUser2.getTeamUserId());
-
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(2);
         AtomicInteger successCount = new AtomicInteger(0);

@@ -97,7 +97,7 @@ public ResponseDto getTeamChatListResult(User user, Long teamId, Integer page) {
     /**
      * 일정 시간마다 redis에 남아있는 채팅 저장해주기
      * */
-    @Scheduled(fixedRate = 86400000) // 24시간 (1000ms * 60s * 60m * 24h)
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void chatHistorySave() {
         List<Chatting> chattings = redisUtil.getAllMessage();
