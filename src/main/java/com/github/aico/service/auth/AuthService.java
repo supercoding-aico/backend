@@ -155,7 +155,7 @@ public class AuthService {
     /**
      *로그인 유지되고 있는지
      **/
-//    @Cacheable(value = "userInfo", key = "#user.userId")
+    @Cacheable(value = "userInfo", key = "#user.userId")
     public ResponseDto loginValidRequest(User user) {
         UserProfileImage userProfileImage = userProfileImageRepository.findByUser(user)
                 .orElseThrow(()->new NotFoundException("유저에 해당하는 프로필이 없습니다."));

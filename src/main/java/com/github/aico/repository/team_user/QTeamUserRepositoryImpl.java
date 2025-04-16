@@ -77,8 +77,8 @@ public class QTeamUserRepositoryImpl implements QTeamUserRepository {
         return jpaQueryFactory.selectFrom(teamUser)
                 .where(teamUser.team.eq(team)
                         .and(teamUser.teamRole.eq(role)))
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)  // 락 설정
-                .fetch();  // 결과 리스트 반환
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetch();
     }
     @Override
     public List<TeamUser> findByTeamIdInAndUserIdIn(Set<Long> teamIds, Set<Long> userIds) {

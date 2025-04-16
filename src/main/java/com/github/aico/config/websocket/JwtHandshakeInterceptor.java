@@ -25,7 +25,6 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     private final UserRepository userRepository;
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        log.info("들어오려고 하니?");
         if (request instanceof ServletServerHttpRequest servletRequest) {
             HttpServletRequest httpServletRequest = servletRequest.getServletRequest();
             Cookie[] cookies = httpServletRequest.getCookies();
