@@ -138,7 +138,8 @@ class TeamServiceIntegrationTest {
         Runnable leaveTask1 = () -> {
             try {
                 System.out.println("User1이 떠난 팀 Id: " + teamId);
-                teamService.leaveTeamResult(savedUser1, teamId, new LeaveTeamMember(savedUser1.getUserId()));
+                teamService.leaveTeamResult(savedUser1, teamId,
+                        new LeaveTeamMember(savedUser1.getUserId()));
                 System.out.println("User1 정상적으로 떠났습니다.");
                 successCount.incrementAndGet();
             } catch (BadRequestException e) {
@@ -153,7 +154,8 @@ class TeamServiceIntegrationTest {
         Runnable leaveTask2 = () -> {
             try {
                 System.out.println("User2가 떠난 팀 Id: " + teamId);
-                teamService.leaveTeamResult(savedUser2, teamId, new LeaveTeamMember(savedUser2.getUserId()));
+                teamService.leaveTeamResult(savedUser2, teamId,
+                        new LeaveTeamMember(savedUser2.getUserId()));
                 System.out.println("User2 탈퇴 성공");
                 successCount.incrementAndGet();
             } catch (BadRequestException e) {

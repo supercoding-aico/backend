@@ -26,6 +26,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -180,6 +182,7 @@ public class TeamService {
      * 팀 삭제(Manger역할을 가진 사람만 삭제 가능)
      * */
     @Transactional
+    @CacheEvict(value = "teamMembers", key = "#teamId")
     public ResponseDto deleteTeamResult(Long teamId, User user) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()->new NotFoundException(teamId+ "에 해당하는 team이 존재하지 않습니다."));
@@ -195,6 +198,7 @@ public class TeamService {
     /**
      * 팀 멤버 조회(팀원이 아닐 경우에는 해당 팀의 멤버 조회 불가)
      * */
+    @Cacheable(value = "teamMembers", key = "#teamId")
     public ResponseDto getTeamMemberResult(User user, Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
@@ -212,6 +216,7 @@ public class TeamService {
      * 팀 탈퇴
      * */
     @Transactional
+    @CacheEvict(value = "teamMembers", key = "#teamId")
     public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
@@ -221,7 +226,8 @@ public class TeamService {
         Long leaveUserId = leaveTeamMember.getUserId();
         //동시성을 위해 Lock 사용
         //Manager가 1명일 때는 팀 탈퇴가 불가능(두명에 mananger가 동시에 탈퇴 버튼 누를 시 팀 삭제도 불가능해지므로 Lock 적용)
-        List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team,TeamRole.MANAGER);
+        List<TeamUser> teamManagers = teamUserRepository
+                .findByTeamAndTeamRole(team,TeamRole.MANAGER);
         User leaveUser = userRepository.findById(leaveUserId)
                 .orElseThrow(()-> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
         TeamUser teamUser = teamUserRepository.findByTeamAndUser(team,leaveUser)
@@ -237,31 +243,7 @@ public class TeamService {
         redisUtil.invalidateUsersCache(teamId);
         return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
     }
-//    @Transactional
-//    public ResponseDto leaveTeamResult(User user, Long teamId, LeaveTeamMember leaveTeamMember) {
-//        System.out.println("leaveTeamResult called with teamId: " + teamId);
-//        Team team = teamRepository.findById(teamId)
-//                .orElseThrow(() -> new NotFoundException(teamId + "에 해당하는 팀을 찾을 수 없습니다."));
-//        List<TeamUser> teamUsers = teamUserRepository.findAllByTeam(team);
-//        TeamRole teamRole = checkTeamRole(team, user);
-//        Long leaveUserId = leaveTeamMember.getUserId();
-//
-//        User leaveUser = userRepository.findById(leaveUserId)
-//                .orElseThrow(() -> new NotFoundException(leaveUserId + "에 해당하는 유저가 존재하지 않습니다."));
-//        TeamUser teamUser = teamUserRepository.findByTeamAndUser(team, leaveUser)
-//                .orElseThrow(() -> new NotFoundException("찾으려는 사람은 현재 팀원이 아닙니다."));
-//
-//        if (teamRole.equals(TeamRole.MANAGER)) {
-//            List<TeamUser> teamManagers = teamUserRepository.findByTeamAndRoleWithLockDsl(team, TeamRole.MANAGER);
-//            System.out.println("떠난 매니저 수: " + teamManagers.size());
-//            handleManagerLeave(team, user, leaveUserId, teamManagers, teamUser);
-//        } else {
-//            handleMemberLeave(user, leaveUserId, teamUser);
-//        }
-//
-//        redisUtil.invalidateUsersCache(teamId);
-//        return new ResponseDto(HttpStatus.NO_CONTENT.value(), "팀 탈퇴처리되었습니다.");
-//    }
+
 
     @Transactional
     public ResponseDto memberInviteResult(Long teamId, User user, EmailDuplicate inviteEmail) {
@@ -328,17 +310,7 @@ public class TeamService {
             teamUserRepository.delete(teamUser);
         }
     }
-//    private void handleManagerLeave(Team team, User user, Long leaveUserId, List<TeamUser> teamManagers, TeamUser teamUser) {
-//        System.out.println("떠난 유저 아이디: " + leaveUserId + ", 매니저 수: " + teamManagers.size());
-//        if (teamManagers.size() == 1) {
-//            if (leaveUserId.equals(user.getUserId())) {
-//                throw new BadRequestException("현재 Manager의 수는 1명 본인 혼자이므로 탈퇴 불가능합니다.");
-//            }
-//        } else {
-//
-//            teamUserRepository.delete(teamUser);
-//        }
-//    }
+
     /**
      * 일반 멤버가 탈퇴할 때
      * */
