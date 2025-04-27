@@ -20,6 +20,8 @@ import com.github.aico.web.dto.user.response.ResponseDto;
 import com.github.aico.service.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -35,8 +37,6 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserProfileImageRepository userProfileImageRepository;
-    private final RoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
     private final S3Uploader s3Uploader;
     private final TeamUserRepository teamUserRepository;
     private final TeamRepository teamRepository;
@@ -55,6 +55,8 @@ public class UserService {
         return new ResponseDto(HttpStatus.OK.value(), "프로필 조회 성공", userInfo);
     }
 
+
+    @CacheEvict(value = "userInfo", key= "#user.userId")
     public ResponseDto updateProfile(User user, ProfileUpdateRequest updateRequest) {
         // 사용자 존재 여부 확인 (이메일 기준)
         User existUser = userRepository.findByEmailUserFetchJoin(user.getEmail())
@@ -65,6 +67,7 @@ public class UserService {
         return new ResponseDto(HttpStatus.OK.value(), "프로필 수정 성공");
     }
 
+    @CacheEvict(value = "userInfo", key= "#user.userId")
     @Transactional
     public ResponseDto deleteProfile(User user) {
         // 사용자 존재 여부 확인 (이메일 기준)
@@ -75,6 +78,7 @@ public class UserService {
         return new ResponseDto(HttpStatus.OK.value(), "회원 탈퇴 성공");
     }
 
+    @CacheEvict(value = "userInfo", key= "#user.userId")
     @Transactional
     public ResponseDto updateProfileImage(User user, MultipartFile profileImage) {
         User existUser = userRepository.findByEmailUserFetchJoin(user.getEmail())

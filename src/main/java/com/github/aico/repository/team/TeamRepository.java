@@ -7,6 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 @Repository
 public interface TeamRepository extends JpaRepository<Team,Long> {
 
@@ -14,4 +18,5 @@ public interface TeamRepository extends JpaRepository<Team,Long> {
     @Query("DELETE FROM Team t WHERE t.teamId = :teamId")
     void deleteTeamById(@Param("teamId") Long teamId);
 
+    List<Team> findAllByTeamIdIn(Set<Long> teamIds);
 }

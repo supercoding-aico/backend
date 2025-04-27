@@ -6,6 +6,7 @@ import com.github.aico.repository.user.User;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface QTeamUserRepository {
     List<TeamUser> findTeamUsersByTeamFetchUser(Team team);
@@ -13,5 +14,6 @@ public interface QTeamUserRepository {
     List<TeamUser> findByTeamWithLockDsl(Team team);
     List<Long> findTeamIdsByUser(Long userId);
     List<Long> findTeamUserIdsByTeam(Long teamId);
+    List<TeamUser> findByTeamIdInAndUserIdIn(Set<Long> teamIds, Set<Long> userIds);
 
 }
